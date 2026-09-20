@@ -1,0 +1,123 @@
+# CLAUDE.md — STRATA
+
+Project context for Claude Code. Read this first, then `PLAN.md` for anything it points at.
+
+## What this is
+
+A GPS role-playing game for Android. The player's real location resolves to a weighted
+mixture of fifteen ancient civilizations; monsters and loot come from that mixture. Real
+city services read from OpenStreetMap drive the loop (bakeries heal, banks store, clothes
+shops re-equip). Museums act as loot beacons for the civilizations they actually hold.
+
+`PLAN.md` is the full design and build plan, 21 sections. It is the source of truth for
+intent. It is **not** a spec — where it is vague, ask rather than invent.
+
+## Status
+
+Pre-production. Phase 0 (see PLAN.md §19) is a **throwaway prototype** whose only job is to
+answer one question: does walking a real route through real civilization zones feel like
+anything? Nothing written in phase 0 is expected to survive. Do not build for reuse yet.
+
+## Locked decisions
+
+Do not relitigate these without being asked:
+
+| Decision | Value |
+| --- | --- |
+| Platform | Android only for now; iOS is a later client, never a second implementation |
+| Client | Kotlin + Jetpack Compose. **2D. No Unity, no AR at launch** |
+| Map | MapLibre Native, self-hosted vector tiles as PMTiles on a CDN |
+| Combat renderer | Spike Rive vs Compose Canvas in week 1, keep the winner |
+| Server | Go, stateless services, server-authoritative for everything valuable |
+| Storage | PostgreSQL 16 + PostGIS, Redis for hot state, NATS for events |
+| Spatial index | H3. r8 for cell weights, r9/r10 for spawn placement, r5 for the weather cache |
+| Identity | Play Games Services v2, wrapped in our own account id from day one |
+| Civilizations | Fifteen. Phase 1 ships Etruria, Kemet, Hopewell deep |
+
+## Non-negotiables
+
+These are not preferences. Flag it loudly if a task would violate one.
+
+1. **The server decides anything valuable.** Drops, accessions, translations, medal
+   unlocks, leaderboard submissions. The client never tells the server what it looted, and
+   a client-supplied Play Games player id is never treated as identity.
+2. **Exclusion zones ship before content does.** No gameplay at schools, hospitals, police,
+   military, prisons, cemeteries, memorials of death or atrocity, or private homes. Places
+   of worship are opt-in per site. See PLAN.md §11.
+3. **Speed gate.** Above ~15 km/h sustained, interaction is disabled. Distance only accrues
+   toward medals below the gate.
+4. **No timed-and-placed incentives.** Nothing rewards reaching a specific spot by a
+   deadline. Natural events (eclipses) are the one exception and carry their own rules.
+5. **Fact and fiction are visually separate.** Real artefact information and invented lore
+   never share a typeface or a panel. Hybrid items carry no non-fiction claim at all.
+6. **Accessibility is in scope from the start.** Auto-resolve combat, every daily objective
+   completable within a 200 m radius, a non-distance medal line of equal prestige.
+
+## Repo layout (target)
+
+```
+/android         Kotlin app. Compose UI, MapLibre map, combat view
+/server          Go services: world, combat, player, beacon, season, trust
+/worldbuild      Offline pipeline: OSM extract -> POI classify -> H3 cell weights
+/proto           Protobuf schemas shared by client and server
+/data            Hand-authored GeoJSON: civilization cores, corridors, blocklist
+/rules           Spawn rule JSON, hot-reloadable (PLAN.md §5)
+/docs            PLAN.md and decision records (docs/decisions/NNNN-*.md)
+```
+
+Today: `/server/world` (cell record, snapshot, walk index, lookup, the H3 helper in
+`h3x`), `/server/cond` (epoch, solar phase, propagation, digest), `/server/spawn`
+(deterministic spawns, rules and bestiary as data), `/server/loot` (the claim: server
+decides the drop), `/server/cmd/worldd` (HTTP world service) and `/server/cmd/worldq`
+(query CLI), `/worldbuild` (classify, cells, museums), `/rules`, `/data`, `/android`
+(`core`: pure Kotlin, tested; `app`: Compose + MapLibre walk test, needs the SDK to
+build), `/worldbuild/drift` (the planet cost field from Natural Earth terrain). Go module
+at the repo root. See `worldbuild/README.md` to run the France build and serve it,
+`android/README.md` to walk it. All four phase 0 tracks are built; see `docs/decisions`.
+
+## Phase 0 spike — the only work in scope right now
+
+Five weeks, throwaway, no art. Four independent tracks:
+
+1. **World build.** Take one Geofabrik metro extract. Classify the POI tag set in PLAN.md
+   §9. Hand-draw three civilization core polygons. Produce H3 r8 weight vectors and a
+   `purity` scalar. Acceptance: query any lat/lon, get back a plausible weight vector in
+   under 5 ms.
+2. **Drift solve.** Multi-source cost-distance from cores over a land/coast/ocean graph,
+   store `cost_i` per cell, derive weights from a runtime `lambda`. Acceptance: nowhere on
+   the planet returns zero weight, and raising `lambda` visibly pulls distant civilizations
+   in. See PLAN.md §4 and §5.
+3. **Deterministic spawns.** `spawns(cell, epoch, condition_digest)` from a hash, no stored
+   spawn rows. Acceptance: two devices in the same cell see the same monsters.
+4. **Walk test.** The actual point. Bare Compose app, MapLibre, location, placeholder
+   fights, real drops. Acceptance: walk a real 3 km route through two zones and have
+   someone who is not on the team tell you whether it felt like anything.
+
+Do not build: accounts, payments, museums, combat depth, art, the event framework.
+
+## Conventions
+
+- Go: standard layout, `golangci-lint`, no ORM, `pgx` with hand-written SQL.
+- Kotlin: Compose only, no XML layouts, coroutines and Flow, no RxJava.
+- Everything spatial goes through one H3 helper module. No ad-hoc lat/lon maths.
+- Content is data, never code: civilizations, spawn rules, item archetypes and lore all
+  live in versioned files under `/data` and `/rules`, hot-reloadable.
+- Commit messages reference the plan section they implement, e.g. `worldbuild: drift solve (§4)`.
+- Write the throwaway prototype in the language it will eventually be in. The offline
+  pipeline is Go too (decision record 0001): it shares the H3 helper and the snapshot codec
+  with the server, and the drift solve is compute-bound. No Python in the repo.
+- Decisions that change a plan section or a convention get a record in `docs/decisions`.
+- CI (`.github/workflows/ci.yml`) runs gofmt, build, vet, golangci-lint (`.golangci.yml`),
+  race tests and the lookup benchmark; the Kotlin core tests; the Android debug build.
+  Semgrep (`.github/workflows/semgrep.yml`) runs the public Go, Kotlin and secrets rules
+  plus the repo's own in `.semgrep/`, which encode the conventions above. Keep both green.
+
+## Open questions — ask, do not decide
+
+Listed in full in PLAN.md §21. The ones that affect code:
+
+- ~~Which metro area is the phase 0 city.~~ Decided: Paris, built from the whole
+  `europe/france` extract (decision record 0001). The two walk-test zones are Hallstatt
+  soil and museum beacon halos; museum data refreshes monthly.
+- Team size, which sets whether phase 0 runs four tracks in parallel or one at a time.
+- Rive vs Compose Canvas for combat, to be answered by the week-1 spike.
