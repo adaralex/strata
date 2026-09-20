@@ -5,9 +5,11 @@ using UnityEngine.UI;
 namespace Strata.UI
 {
     /// <summary>
-    /// Builds the whole HUD from code so the scene needs no hand-wired Canvas. Two fonts:
-    /// the default sans for everything the game says, and a serif for facts, so fact and
-    /// fiction never share a typeface (non-negotiable 5).
+    /// Builds the whole HUD from code so the scene needs no hand-wired Canvas. Three type
+    /// styles with strict jobs: the default sans for everything the game says, Spectral
+    /// (serif) for facts only, so fact and fiction never share a typeface (non-negotiable 5),
+    /// and Cinzel (display, capitals) for chrome: titles, buttons, item and monster names.
+    /// The look is leather and gold over the parchment map; every frame is drawn, not art.
     /// </summary>
     public sealed class UIKit
     {
@@ -15,14 +17,17 @@ namespace Strata.UI
         public readonly RectTransform Root;
         public readonly TMP_FontAsset Sans;
         public readonly TMP_FontAsset Serif;
+        public readonly TMP_FontAsset Display;
 
-        public static readonly Color Ink = new Color(0.95f, 0.94f, 0.90f);
-        public static readonly Color Panel = new Color(0.08f, 0.09f, 0.11f, 0.92f);
-        /// <summary>For full-screen views, so the HUD underneath never shows through.</summary>
-        public static readonly Color PanelOpaque = new Color(0.08f, 0.09f, 0.11f, 1f);
-        public static readonly Color PanelLight = new Color(0.16f, 0.17f, 0.20f, 0.95f);
-        public static readonly Color Warn = new Color(0.85f, 0.35f, 0.25f, 0.95f);
-        public static readonly Color Accent = new Color(0.93f, 0.77f, 0.42f);
+        public static readonly Color Ink = new Color(0.93f, 0.87f, 0.72f);            // parchment text on leather
+        public static readonly Color InkDark = new Color(0.13f, 0.09f, 0.07f);         // text on gold
+        public static readonly Color Muted = new Color(0.66f, 0.60f, 0.50f);
+        public static readonly Color Panel = new Color(0.13f, 0.09f, 0.07f, 0.94f);   // leather
+        public static readonly Color PanelOpaque = new Color(0.13f, 0.09f, 0.07f, 1f);
+        public static readonly Color PanelLight = new Color(0.22f, 0.16f, 0.11f, 0.98f);
+        public static readonly Color Warn = new Color(0.62f, 0.20f, 0.16f, 0.96f);
+        public static readonly Color Accent = new Color(0.85f, 0.68f, 0.35f);         // gold
+        public static readonly Color GoldDim = new Color(0.55f, 0.43f, 0.22f);
 
         public UIKit()
         {
@@ -38,8 +43,16 @@ namespace Strata.UI
             EnsureEventSystem();
 
             Sans = TMP_Settings.defaultFontAsset;
-            var serifFont = Resources.Load<Font>("Fonts/Spectral-Regular");
-            Serif = serifFont != null ? TMP_FontAsset.CreateFontAsset(serifFont) : Sans;
+            Serif = Runtime("Fonts/Spectral-Regular") ?? Sans;
+            Display = Runtime("Fonts/Cinzel-Variable") ?? Sans;
+        }
+
+        private static TMP_FontAsset Runtime(string resource)
+        {
+            var font = Resources.Load<Font>(resource);
+            if (font == null) { Debug.LogWarning("UIKit: font resource missing: " + resource); return null; }
+            try { return TMP_FontAsset.CreateFontAsset(font); }
+            catch (System.Exception e) { Debug.LogWarning("UIKit: could not create font asset for " + resource + ": " + e.Message); return null; }
         }
 
         private static void EnsureEventSystem()
@@ -53,6 +66,8 @@ namespace Strata.UI
 #endif
         }
 
+        // ---- panels ----
+
         public RectTransform Panel_(string name, RectTransform parent, Color colour)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
@@ -62,7 +77,15 @@ namespace Strata.UI
             return rt;
         }
 
-        /// <summary>A panel anchored to an edge: top, bottom, or full screen.</summary>
+        /// <summary>A panel with a thin gold frame inside its edge.</summary>
+        public RectTransform Framed(string name, RectTransform parent, Color colour, float thickness = 1.5f)
+        {
+            var rt = Panel_(name, parent, colour);
+            Frame(rt, GoldDim, thickness, 4);
+            return rt;
+        }
+
+        /// <summary>A panel anchored to an edge: top, bottom, or full screen. Carries a gold hairline on its inner edge.</summary>
         public RectTransform Bar(string name, RectTransform parent, Color colour, bool top, float height)
         {
             var rt = Panel_(name, parent, colour);
@@ -71,6 +94,7 @@ namespace Strata.UI
             rt.pivot = top ? new Vector2(0.5f, 1) : new Vector2(0.5f, 0);
             rt.anchoredPosition = Vector2.zero;
             rt.sizeDelta = new Vector2(0, height);
+            Edge(rt, top ? Vector2.zero : Vector2.up, GoldDim, 2f);
             return rt;
         }
 
@@ -80,8 +104,43 @@ namespace Strata.UI
             rt.anchorMin = Vector2.zero;
             rt.anchorMax = Vector2.one;
             rt.offsetMin = rt.offsetMax = Vector2.zero;
+            Frame(rt, GoldDim, 2f, 12);
             return rt;
         }
+
+        /// <summary>Four thin lines inside a rect's edges, outside any layout group's flow.</summary>
+        public void Frame(RectTransform rt, Color colour, float thickness, float inset)
+        {
+            Line(rt, "FrameTop", new Vector2(0, 1), new Vector2(1, 1), new Vector2(inset, -inset - thickness), new Vector2(-inset, -inset), colour);
+            Line(rt, "FrameBottom", new Vector2(0, 0), new Vector2(1, 0), new Vector2(inset, inset), new Vector2(-inset, inset + thickness), colour);
+            Line(rt, "FrameLeft", new Vector2(0, 0), new Vector2(0, 1), new Vector2(inset, inset), new Vector2(inset + thickness, -inset), colour);
+            Line(rt, "FrameRight", new Vector2(1, 0), new Vector2(1, 1), new Vector2(-inset - thickness, inset), new Vector2(-inset, -inset), colour);
+        }
+
+        /// <summary>One hairline along an edge: anchor (0,0) bottom or (0,1) top.</summary>
+        private void Edge(RectTransform rt, Vector2 edge, Color colour, float thickness)
+        {
+            bool top = edge.y > 0.5f;
+            Line(rt, top ? "EdgeTop" : "EdgeBottom", new Vector2(0, top ? 1 : 0), new Vector2(1, top ? 1 : 0),
+                new Vector2(0, top ? -thickness : 0), new Vector2(0, top ? 0 : thickness), colour);
+        }
+
+        private static void Line(RectTransform parent, string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax, Color colour)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+            go.transform.SetParent(parent, false);
+            var img = go.GetComponent<Image>();
+            img.color = colour;
+            img.raycastTarget = false;
+            go.GetComponent<LayoutElement>().ignoreLayout = true;
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = offsetMin;
+            rt.offsetMax = offsetMax;
+        }
+
+        // ---- layout ----
 
         public VerticalLayoutGroup Column(RectTransform rt, int padding = 32, float spacing = 16)
         {
@@ -92,42 +151,6 @@ namespace Strata.UI
             v.childControlHeight = true;
             v.childControlWidth = true;
             return v;
-        }
-
-        public TextMeshProUGUI Text(RectTransform parent, string text, float size, bool serif = false, TextAlignmentOptions align = TextAlignmentOptions.TopLeft, Color? colour = null)
-        {
-            var go = new GameObject("Text", typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            var t = go.AddComponent<TextMeshProUGUI>();
-            t.font = serif ? Serif : Sans;
-            t.text = text;
-            t.fontSize = size;
-            t.color = colour ?? Ink;
-            t.alignment = align;
-            t.textWrappingMode = TextWrappingModes.Normal;
-            t.raycastTarget = false;
-            var le = go.AddComponent<LayoutElement>();
-            le.minHeight = size * 1.2f;
-            return t;
-        }
-
-        public Button Button_(RectTransform parent, string label, Color colour, System.Action onClick, float height = 120, TextAlignmentOptions align = TextAlignmentOptions.Center, Color? textColour = null)
-        {
-            var go = new GameObject("Button " + label, typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            go.GetComponent<Image>().color = colour;
-            var b = go.GetComponent<Button>();
-            b.onClick.AddListener(() => onClick());
-            var le = go.AddComponent<LayoutElement>();
-            le.minHeight = height;
-            le.preferredHeight = height;
-            var t = Text(go.GetComponent<RectTransform>(), label, 44, false, align, textColour ?? Color.black);
-            var trt = t.GetComponent<RectTransform>();
-            trt.anchorMin = Vector2.zero;
-            trt.anchorMax = Vector2.one;
-            trt.offsetMin = new Vector2(24, 8);
-            trt.offsetMax = new Vector2(-24, -8);
-            return b;
         }
 
         /// <summary>A horizontal strip of equal-width children inside a column.</summary>
@@ -146,18 +169,6 @@ namespace Strata.UI
             le.preferredHeight = height;
             le.flexibleHeight = 0; // the group would otherwise report its children's flexible height and swell
             return go.GetComponent<RectTransform>();
-        }
-
-        /// <summary>A title line with a close control, for full-screen views.</summary>
-        public void Header(RectTransform parent, string title, System.Action close)
-        {
-            var row = Row(parent, 90, 16);
-            var t = Text(row, title, 56, false, TextAlignmentOptions.Left, Accent);
-            t.GetComponent<LayoutElement>().flexibleWidth = 1;
-            var b = Button_(row, "Close", PanelLight, close, 90, TextAlignmentOptions.Center, Ink);
-            var le = b.GetComponent<LayoutElement>();
-            le.flexibleWidth = 0;
-            le.minWidth = le.preferredWidth = 220;
         }
 
         /// <summary>A vertical scroll area that takes the column's remaining height; returns its content column.</summary>
@@ -204,6 +215,77 @@ namespace Strata.UI
             return crt;
         }
 
+        // ---- text ----
+
+        public TextMeshProUGUI Text(RectTransform parent, string text, float size, bool serif = false, TextAlignmentOptions align = TextAlignmentOptions.TopLeft, Color? colour = null)
+        {
+            var go = new GameObject("Text", typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            var t = go.AddComponent<TextMeshProUGUI>();
+            t.font = serif ? Serif : Sans;
+            t.text = text;
+            t.fontSize = size;
+            t.color = colour ?? Ink;
+            t.alignment = align;
+            t.textWrappingMode = TextWrappingModes.Normal;
+            t.raycastTarget = false;
+            var le = go.AddComponent<LayoutElement>();
+            le.minHeight = size * 1.2f;
+            return t;
+        }
+
+        /// <summary>Chrome text in the display face: titles, section heads, item and monster names.</summary>
+        public TextMeshProUGUI Title(RectTransform parent, string text, float size, TextAlignmentOptions align = TextAlignmentOptions.TopLeft, Color? colour = null)
+        {
+            var t = Text(parent, text, size, false, align, colour ?? Accent);
+            t.font = Display;
+            t.characterSpacing = 4;
+            return t;
+        }
+
+        /// <summary>A title line with a close control, for full-screen views.</summary>
+        public void Header(RectTransform parent, string title, System.Action close)
+        {
+            var row = Row(parent, 90, 16);
+            var t = Title(row, title, 52, TextAlignmentOptions.Left);
+            t.GetComponent<LayoutElement>().flexibleWidth = 1;
+            var b = Button_(row, "Close", PanelLight, close, 90);
+            var le = b.GetComponent<LayoutElement>();
+            le.flexibleWidth = 0;
+            le.minWidth = le.preferredWidth = 220;
+        }
+
+        // ---- controls ----
+
+        /// <summary>
+        /// A button. Gold (Accent) buttons are primary: gold fill, dark display text. Any other
+        /// colour draws a framed leather button with gold display text. Multi-line labels are
+        /// rows (lists), set in the sans so they stay readable.
+        /// </summary>
+        public Button Button_(RectTransform parent, string label, Color colour, System.Action onClick, float height = 120, TextAlignmentOptions align = TextAlignmentOptions.Center, Color? textColour = null)
+        {
+            var go = new GameObject("Button " + label, typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(parent, false);
+            go.GetComponent<Image>().color = colour;
+            var b = go.GetComponent<Button>();
+            b.onClick.AddListener(() => onClick());
+            var le = go.AddComponent<LayoutElement>();
+            le.minHeight = height;
+            le.preferredHeight = height;
+            bool primary = colour == Accent;
+            bool row = label.Contains("\n");
+            var rt = go.GetComponent<RectTransform>();
+            Frame(rt, primary ? InkDark : GoldDim, primary ? 1.5f : 1.5f, 5);
+            var t = Text(rt, label, row ? 40 : 38, false, align, textColour ?? (primary ? InkDark : Accent));
+            if (!row) { t.font = Display; t.characterSpacing = 3; }
+            var trt = t.GetComponent<RectTransform>();
+            trt.anchorMin = Vector2.zero;
+            trt.anchorMax = Vector2.one;
+            trt.offsetMin = new Vector2(28, 8);
+            trt.offsetMax = new Vector2(-28, -8);
+            return b;
+        }
+
         public TMP_InputField Input(RectTransform parent, string value, string placeholder)
         {
             var go = new GameObject("Input", typeof(RectTransform), typeof(Image));
@@ -211,6 +293,7 @@ namespace Strata.UI
             go.GetComponent<Image>().color = PanelLight;
             var le = go.AddComponent<LayoutElement>();
             le.minHeight = 110;
+            Frame(go.GetComponent<RectTransform>(), GoldDim, 1.5f, 4);
             var textArea = new GameObject("Text Area", typeof(RectTransform), typeof(RectMask2D));
             textArea.transform.SetParent(go.transform, false);
             var tart = textArea.GetComponent<RectTransform>();
@@ -219,7 +302,7 @@ namespace Strata.UI
             tart.offsetMin = new Vector2(20, 10);
             tart.offsetMax = new Vector2(-20, -10);
             var text = Text(tart, "", 40);
-            var ph = Text(tart, placeholder, 40, false, TextAlignmentOptions.Left, new Color(0.6f, 0.6f, 0.6f));
+            var ph = Text(tart, placeholder, 40, false, TextAlignmentOptions.Left, Muted);
             foreach (var t in new[] { text, ph })
             {
                 var rt = t.GetComponent<RectTransform>();

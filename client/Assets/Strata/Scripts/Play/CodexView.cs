@@ -27,10 +27,10 @@ namespace Strata.Play
             var content = _ui.Scroll(_panel);
 
             var b = _store.battle;
-            var stats = _ui.Panel_("Battle", content, UIKit.PanelLight);
+            var stats = _ui.Framed("Battle", content, UIKit.PanelLight);
             _ui.Column(stats, 28, 6);
-            _ui.Text(stats, "BATTLE RECORD", 26, false, TextAlignmentOptions.TopLeft, UIKit.Accent);
-            var row = _ui.Row(stats, 70, 12);
+            _ui.Title(stats, "BATTLE RECORD", 24);
+            var row = _ui.Row(stats, 84, 12);
             Cell(row, "fights", b.fights);
             Cell(row, "won", b.wins);
             Cell(row, "lost", b.losses);
@@ -46,16 +46,16 @@ namespace Strata.Play
             }
 
             var entries = _store.CodexByRecency();
-            _ui.Text(content, $"MONSTERS FOUGHT  <color=#AAAAAA>{entries.Count}</color>", 26, false, TextAlignmentOptions.TopLeft, UIKit.Accent);
+            _ui.Title(content, $"MONSTERS FOUGHT  <color=#AAAAAA>{entries.Count}</color>", 24);
             if (entries.Count == 0)
                 _ui.Text(content, "No fights yet. Tap a marker within 40 m.", 36, false, TextAlignmentOptions.TopLeft, new Color(0.7f, 0.7f, 0.7f));
             foreach (var e in entries)
             {
-                var card = _ui.Panel_("Monster", content, UIKit.PanelLight);
+                var card = _ui.Framed("Monster", content, UIKit.PanelLight);
                 _ui.Column(card, 24, 4);
                 var rank = e.rank == "common" || string.IsNullOrEmpty(e.rank) ? "" : $"  <color=#E9C46A>{e.rank.ToUpper()}</color>";
                 var hybrid = string.IsNullOrEmpty(e.secondary) ? "" : $"  <color=#AAAAAA>with {CivPalette.Label(e.secondary)}</color>";
-                _ui.Text(card, $"{e.name}{rank}", 40);
+                _ui.Title(card, $"{e.name}{rank}", 38);
                 _ui.Text(card, $"{CivPalette.Coloured(e.civ)} · {e.tierName}{hybrid}", 30, false, TextAlignmentOptions.TopLeft, new Color(0.8f, 0.8f, 0.8f));
                 _ui.Text(card, $"fought {e.fought} · won {e.won} · lost {e.lost}{(e.autoResolved > 0 ? $" · auto {e.autoResolved}" : "")}", 30, false, TextAlignmentOptions.TopLeft, new Color(0.7f, 0.7f, 0.7f));
                 if (!string.IsNullOrEmpty(e.fiction))
@@ -65,10 +65,10 @@ namespace Strata.Play
 
         private void Cell(RectTransform row, string label, int value)
         {
-            var cell = _ui.Panel_("Cell " + label, row, UIKit.Panel);
+            var cell = _ui.Framed("Cell " + label, row, UIKit.Panel);
             _ui.Column(cell, 12, 0);
-            _ui.Text(cell, label, 26, false, TextAlignmentOptions.Center, new Color(0.7f, 0.7f, 0.7f));
-            _ui.Text(cell, value.ToString(), 44, false, TextAlignmentOptions.Center);
+            _ui.Title(cell, label.ToUpper(), 22, TextAlignmentOptions.Center, UIKit.Muted);
+            _ui.Title(cell, value.ToString(), 44, TextAlignmentOptions.Center, UIKit.Ink);
         }
     }
 }

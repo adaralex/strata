@@ -37,6 +37,7 @@ namespace Strata.Play
             h.childForceExpandWidth = true;
             h.childControlWidth = true;
             segGo.GetComponent<LayoutElement>().minHeight = 28;
+            ui.Frame(_segments, UIKit.GoldDim, 1.5f, -3); // a gold rule just outside the segments
 
             _legend = ui.Text(bar, "waiting for the ground", 36);
             _line2 = ui.Text(bar, "", 32, false, TextAlignmentOptions.TopLeft, new Color(0.72f, 0.72f, 0.72f));

@@ -43,7 +43,7 @@ namespace Strata.Play
             _panel = _ui.Full("Fight", _ui.Root, UIKit.Panel);
             var col = _ui.Column(_panel, 40, 24);
             col.childAlignment = TextAnchor.UpperCenter;
-            _title = _ui.Text(_panel, $"{sp.Name}\n<size=60%>{CivPalette.Label(sp.Civ)} · {sp.TierName} · {sp.Rank}</size>", 60, false, TextAlignmentOptions.Center);
+            _title = _ui.Title(_panel, $"{sp.Name}\n<size=55%>{CivPalette.Coloured(sp.Civ)} · {sp.TierName} · {sp.Rank}</size>", 56, TextAlignmentOptions.Center);
             _ui.Text(_panel, sp.Fiction ?? "", 38, false, TextAlignmentOptions.Center, new Color(0.8f, 0.8f, 0.8f));
             _status = _ui.Text(_panel, "tap when the ring meets the circle", 40, false, TextAlignmentOptions.Center, UIKit.Accent);
 

@@ -36,7 +36,7 @@ namespace Strata.Play
         public static void Describe(UIKit ui, RectTransform panel, Item item, BeaconOut beacon)
         {
             ui.Text(panel, $"{CivPalette.Coloured(item.Civ)}  ·  {item.TierName}  ·  {item.Authenticity}{(string.IsNullOrEmpty(item.Slot) ? "" : "  ·  " + item.Slot)}", 38);
-            ui.Text(panel, item.Name, 64, false, TextAlignmentOptions.TopLeft, UIKit.Accent);
+            ui.Title(panel, item.Name, 54);
             if (item.IsHybrid)
                 ui.Text(panel, $"a hybrid: {CivPalette.Label(item.Civ)} carried on {CivPalette.Label(item.Secondary)} ground", 36, false, TextAlignmentOptions.TopLeft, new Color(0.8f, 0.8f, 0.8f));
 
@@ -80,9 +80,9 @@ namespace Strata.Play
             // Fiction panel: sans, dark.
             if (!string.IsNullOrEmpty(item.Fiction))
             {
-                var fic = ui.Panel_("Fiction", panel, UIKit.PanelLight);
+                var fic = ui.Framed("Fiction", panel, UIKit.PanelLight);
                 ui.Column(fic, 28, 8);
-                ui.Text(fic, "THE ANVIL SAYS", 26, false, TextAlignmentOptions.TopLeft, UIKit.Accent);
+                ui.Title(fic, "THE ANVIL SAYS", 22);
                 ui.Text(fic, item.Fiction, 38, false, TextAlignmentOptions.TopLeft);
             }
         }

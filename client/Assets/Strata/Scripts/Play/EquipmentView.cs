@@ -37,17 +37,17 @@ namespace Strata.Play
             var content = _ui.Scroll(_panel);
 
             // Stats block.
-            var stats = _ui.Panel_("Stats", content, UIKit.PanelLight);
+            var stats = _ui.Framed("Stats", content, UIKit.PanelLight);
             _ui.Column(stats, 28, 6);
-            _ui.Text(stats, "FROM WHAT YOU WEAR", 26, false, TextAlignmentOptions.TopLeft, UIKit.Accent);
+            _ui.Title(stats, "FROM WHAT YOU WEAR", 24);
             var totals = _store.StatTotals();
-            var row = _ui.Row(stats, 70, 12);
+            var row = _ui.Row(stats, 84, 12);
             foreach (var s in PlayerStore.Stats)
             {
-                var cell = _ui.Panel_("Stat " + s, row, UIKit.Panel);
+                var cell = _ui.Framed("Stat " + s, row, UIKit.Panel);
                 _ui.Column(cell, 12, 0);
-                _ui.Text(cell, CivPalette.StatLabel(s), 26, false, TextAlignmentOptions.Center, new Color(0.7f, 0.7f, 0.7f));
-                _ui.Text(cell, totals.TryGetValue(s, out var v) ? v.ToString("0") : "0", 44, false, TextAlignmentOptions.Center);
+                _ui.Title(cell, CivPalette.StatLabel(s).ToUpper(), 22, TextAlignmentOptions.Center, UIKit.Muted);
+                _ui.Title(cell, totals.TryGetValue(s, out var v) ? v.ToString("0") : "0", 44, TextAlignmentOptions.Center, UIKit.Ink);
             }
             var extra = new List<string>();
             foreach (var kv in totals) if (Array.IndexOf(PlayerStore.Stats, kv.Key) < 0 && kv.Value != 0) extra.Add($"{kv.Key} +{kv.Value:0}");

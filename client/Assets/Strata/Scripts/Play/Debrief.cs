@@ -32,7 +32,7 @@ namespace Strata.Play
             var panel = _ui.Full("Debrief", _ui.Root, UIKit.Panel);
             var col = _ui.Column(panel, 40, 18);
             col.childAlignment = TextAnchor.UpperLeft;
-            _ui.Text(panel, "End of walk", 60, false, TextAlignmentOptions.TopLeft, UIKit.Accent);
+            _ui.Title(panel, "End of walk", 52);
             _ui.Text(panel, log.Summary(), 40);
 
             _ui.Text(panel, "Did the ground feel different anywhere? Where?", 36, false, TextAlignmentOptions.TopLeft, UIKit.Accent);

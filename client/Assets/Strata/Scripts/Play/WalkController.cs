@@ -259,7 +259,8 @@ namespace Strata.Play
             _modal = true;
             var panel = _ui.Full("Settings", _ui.Root, UIKit.Panel);
             _ui.Column(panel, 40, 20);
-            _ui.Text(panel, "worldd base URL", 40, false, TextAlignmentOptions.TopLeft, UIKit.Accent);
+            _ui.Title(panel, "Server", 52);
+            _ui.Text(panel, "worldd base URL", 36, false, TextAlignmentOptions.TopLeft, UIKit.Muted);
             var input = _ui.Input(panel, _client.BaseUrl, "http://host:8080");
             _ui.Text(panel, $"device id {_client.DeviceId}\nanonymous, generated on this phone, not an account", 30, false, TextAlignmentOptions.TopLeft, new Color(0.7f, 0.7f, 0.7f));
             _ui.Text(panel, map.UsingGoMap ? "map: GO Map" : "map: flat fallback (STRATA_GOMAP not defined)", 30, false, TextAlignmentOptions.TopLeft, new Color(0.7f, 0.7f, 0.7f));
