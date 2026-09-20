@@ -315,3 +315,21 @@ func Res0Cells() ([]Cell, error) { return h3.Res0Cells() }
 
 // EdgeLengthKm is the average hexagon edge length at a resolution.
 func EdgeLengthKm(res int) (float64, error) { return h3.HexagonEdgeLengthAvgKm(res) }
+
+// SamplePoints returns points along a polyline every stepM metres, vertices
+// included. Used to place things on a way rather than in a cell.
+func SamplePoints(ls orb.LineString, stepM float64) []orb.Point {
+	var out []orb.Point
+	for i := 0; i < len(ls); i++ {
+		out = append(out, ls[i])
+		if i+1 >= len(ls) {
+			break
+		}
+		d := DistanceM(ls[i], ls[i+1])
+		n := int(math.Ceil(d / stepM))
+		for j := 1; j < n; j++ {
+			out = append(out, lerp(ls[i], ls[i+1], float64(j)/float64(n)))
+		}
+	}
+	return out
+}

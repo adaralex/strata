@@ -74,7 +74,19 @@ an anonymous `X-Strata-Device` header that is not identity (non-negotiable 1; ac
 arrive in phase 1). `STRATA_SECRET` must be the same on every server answering for one
 world, or players see different monsters.
 
+## Amendment: spawns stand on streets (2026-09-20)
+
+The first phone walk covered 488 m past a dozen spawns and never came within 40 m of
+one: placement was uniform over a cell's 49 r10 children, and in a suburb most of those
+are houses and gardens. PLAN §4 said "snapped off roads/water/private" and track 3
+deferred it. Now `worldbuild` samples every pedestrian-usable way (`walkable` matchers in
+`poi_classes.json`: footways, paths, pedestrian and living streets, residential and
+unclassified roads, steps, cycleways, tracks, never `access=private`) every 20 m and
+keeps one on-street point per r10 cell in the snapshot. Placement prefers a non-excluded
+child that has such a point and stands within 5 m of it; only a cell with no ways at all
+falls back to anywhere non-excluded. Private homes are handled by the same rule: a
+garden has no street point.
+
 ## Deferred
 
-Weather, the rule digest memoisation (rules are few enough to evaluate per call), private
-homes at placement, the speed gate from activity recognition, and persistence of claims.
+Weather, the rule digest memoisation (rules are few enough to evaluate per call), the speed gate from activity recognition, and persistence of claims.

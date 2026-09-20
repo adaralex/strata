@@ -38,10 +38,11 @@
   },
   "placement": {
     "jitter_m": 30,
+    "street_jitter_m": 5,
     "interaction_range_m": 40,
     "sense_range_m": 250,
     "claim_grace_epochs": 1,
-    "$comment": "A spawn sits within jitter_m of the centre of one non-excluded r10 child of its cell. A collapse must come from within interaction_range_m and within the spawn's epoch or the one after."
+    "$comment": "A spawn stands within street_jitter_m of an on-street point in a non-excluded r10 child of its cell when the cell has pedestrian ways (the common case); otherwise within jitter_m of a non-excluded child's centre. A collapse must come from within interaction_range_m and within the spawn's epoch or the one after."
   },
   "speed_gate": {
     "max_speed_kmh": 15,

@@ -37,6 +37,9 @@
   <node id="290" lat="43.5361" lon="1.3436"/><node id="291" lat="43.5361" lon="1.3441"/><node id="292" lat="43.5365" lon="1.3441"/><node id="293" lat="43.5365" lon="1.3436"/>
   <!-- Private garden polygon -->
   <node id="300" lat="43.5395" lon="1.3430"/><node id="301" lat="43.5395" lon="1.3434"/><node id="302" lat="43.5398" lon="1.3434"/><node id="303" lat="43.5398" lon="1.3430"/>
+  <!-- A footway along the square and a residential street south of it -->
+  <node id="310" lat="43.5366" lon="1.3430"/><node id="311" lat="43.5367" lon="1.3448"/><node id="312" lat="43.5369" lon="1.3462"/>
+  <node id="320" lat="43.5350" lon="1.3400"/><node id="321" lat="43.5352" lon="1.3470"/>
   <!-- A house -->
   <node id="270" lat="43.5390" lon="1.3420"/><node id="271" lat="43.5390" lon="1.3422"/><node id="272" lat="43.5392" lon="1.3422"/><node id="273" lat="43.5392" lon="1.3420"/>
   <!-- A roundabout: closed highway way, must stay a line and is not interesting -->
@@ -52,6 +55,9 @@
   <way id="109"><nd ref="270"/><nd ref="271"/><nd ref="272"/><nd ref="273"/><nd ref="270"/><tag k="building" v="house"/></way>
   <way id="111"><nd ref="290"/><nd ref="291"/><nd ref="292"/><nd ref="293"/><nd ref="290"/><tag k="amenity" v="place_of_worship"/><tag k="religion" v="christian"/><tag k="name" v="Église Saint-Test"/></way>
   <way id="112"><nd ref="300"/><nd ref="301"/><nd ref="302"/><nd ref="303"/><nd ref="300"/><tag k="leisure" v="garden"/><tag k="access" v="private"/></way>
+  <way id="113"><nd ref="310"/><nd ref="311"/><nd ref="312"/><tag k="highway" v="footway"/></way>
+  <way id="114"><nd ref="320"/><nd ref="321"/><tag k="highway" v="residential"/><tag k="name" v="Rue test"/></way>
+  <way id="115"><nd ref="270"/><nd ref="273"/><tag k="highway" v="service"/><tag k="access" v="private"/></way>
   <way id="110"><nd ref="280"/><nd ref="281"/><nd ref="282"/><nd ref="280"/><tag k="highway" v="residential"/><tag k="junction" v="roundabout"/></way>
   <relation id="300"><member type="way" ref="106" role="outer"/><member type="way" ref="107" role="outer"/><tag k="type" v="multipolygon"/><tag k="landuse" v="forest"/><tag k="name" v="Bois test"/></relation>
 </osm>

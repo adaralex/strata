@@ -20,6 +20,9 @@ type Rules struct {
 	Classes    []Class     `json:"classes"`
 	Exclusions []Exclusion `json:"exclusions"`
 	Terrain    []Terrain   `json:"terrain"`
+	// Walkable matchers select ways a pedestrian can use; spawn placement
+	// snaps to points sampled along them.
+	Walkable []Matcher `json:"walkable"`
 }
 
 // Class is one POI function.
@@ -259,10 +262,23 @@ func (r *Rules) MatchTerrain(tags map[string]string) []string {
 	return out
 }
 
+// IsWalkable reports whether a tag set is a pedestrian-usable way.
+func (r *Rules) IsWalkable(tags map[string]string) bool {
+	for i := range r.Walkable {
+		if r.Walkable[i].Matches(tags) {
+			return true
+		}
+	}
+	return false
+}
+
 // Interesting reports whether a tag set matters to the build at all.
 func (r *Rules) Interesting(tags map[string]string) bool {
 	if len(tags) == 0 {
 		return false
+	}
+	if r.IsWalkable(tags) {
+		return true
 	}
 	if _, ok := r.MatchExclusion(tags); ok {
 		return true

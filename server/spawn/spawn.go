@@ -132,9 +132,14 @@ func (s *Spawner) spawnsAt(cell h3x.Cell, v cond.Vector) ([]Spawn, error) {
 		return nil, err
 	}
 	free := children[:0:0]
+	var street []h3x.Cell // free children that carry an on-street point
 	for _, c := range children {
-		if !s.World.Snap.IsExcluded(uint64(c)) {
-			free = append(free, c)
+		if s.World.Snap.IsExcluded(uint64(c)) {
+			continue
+		}
+		free = append(free, c)
+		if _, _, ok := s.World.Snap.WalkPoint(uint64(c)); ok {
+			street = append(street, c)
 		}
 	}
 	if len(free) == 0 {
@@ -210,12 +215,23 @@ func (s *Spawner) spawnsAt(cell h3x.Cell, v cond.Vector) ([]Spawn, error) {
 			floor, rankMul = r.Ranks.Elite.TierFloor, r.Ranks.Elite.ValueMul
 		}
 		tier := max(rg.pick(dist), min(floor, len(r.Tiers.Names)-1))
-		place := free[rg.intn(len(free))]
-		plat, plon, err := h3x.Center(place)
-		if err != nil {
-			continue
+		// Prefer a child with a pedestrian way and stand on it; fall back to
+		// anywhere non-excluded in a cell with no ways at all.
+		var place h3x.Cell
+		var plat, plon, jitter float64
+		if len(street) > 0 {
+			place = street[rg.intn(len(street))]
+			plat, plon, _ = s.World.Snap.WalkPoint(uint64(place))
+			jitter = r.Placement.StreetJitterM
+		} else {
+			place = free[rg.intn(len(free))]
+			var err error
+			if plat, plon, err = h3x.Center(place); err != nil {
+				continue
+			}
+			jitter = r.Placement.JitterM
 		}
-		plat, plon = h3x.Offset(plat, plon, rg.float()*360, math.Sqrt(rg.float())*r.Placement.JitterM)
+		plat, plon = h3x.Offset(plat, plon, rg.float()*360, math.Sqrt(rg.float())*jitter)
 		sp := Spawn{
 			Cell: cell.String(), Epoch: v.Epoch, ExpiresAt: expires, Slot: slot,
 			Civ: s.World.CivName(civID), Kind: m.ID, Name: m.Name, Tags: m.Tags, Fiction: m.Fiction,

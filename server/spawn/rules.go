@@ -60,6 +60,7 @@ type Rules struct {
 	} `json:"authenticity"`
 	Placement struct {
 		JitterM           float64 `json:"jitter_m"`
+		StreetJitterM     float64 `json:"street_jitter_m"`
 		InteractionRangeM float64 `json:"interaction_range_m"`
 		SenseRangeM       float64 `json:"sense_range_m"`
 		ClaimGraceEpochs  int64   `json:"claim_grace_epochs"`

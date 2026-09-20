@@ -160,9 +160,15 @@ func TestSpawnShape(t *testing.T) {
 				t.Fatalf("spawn placed on an excluded r10 cell: %+v", sp)
 			}
 			place, _ := h3x.ParseCell(sp.PlaceCell)
-			plat, plon, _ := h3x.Center(place)
-			if d := h3x.DistanceM(pt(plon, plat), pt(sp.Lon, sp.Lat)); d > r.Placement.JitterM+1 {
-				t.Fatalf("spawn %.0f m from its place cell centre", d)
+			if wlat, wlon, ok := s.World.Snap.WalkPoint(uint64(place)); ok {
+				if d := h3x.DistanceM(pt(wlon, wlat), pt(sp.Lon, sp.Lat)); d > r.Placement.StreetJitterM+1 {
+					t.Fatalf("spawn %.0f m from its street point", d)
+				}
+			} else {
+				plat, plon, _ := h3x.Center(place)
+				if d := h3x.DistanceM(pt(plon, plat), pt(sp.Lon, sp.Lat)); d > r.Placement.JitterM+1 {
+					t.Fatalf("spawn %.0f m from its place cell centre", d)
+				}
 			}
 			if len(sp.ID) != 16 {
 				t.Fatalf("id %q", sp.ID)
@@ -463,5 +469,33 @@ func TestRanks(t *testing.T) {
 	}
 	if bossCells > 30 {
 		t.Fatalf("centre cell held a boss in %d of 60 epochs; bosses should be rare", bossCells)
+	}
+}
+
+func TestSpawnsStandOnStreets(t *testing.T) {
+	s := newSpawner(t)
+	cell, _ := h3x.FromLatLng(townHall[0], townHall[1], h3x.ResWeight)
+	children, _ := h3x.Children(cell, h3x.ResPlace)
+	streets := 0
+	for _, c := range children {
+		if _, _, ok := s.World.Snap.WalkPoint(uint64(c)); ok {
+			streets++
+		}
+	}
+	if streets == 0 {
+		t.Skip("fixture centre cell has no walkable children")
+	}
+	for e := int64(0); e < 20; e++ {
+		sps, _, _ := s.Spawns(cell, noon.Add(time.Duration(e)*15*time.Minute))
+		for _, sp := range sps {
+			place, _ := h3x.ParseCell(sp.PlaceCell)
+			lat, lon, ok := s.World.Snap.WalkPoint(uint64(place))
+			if !ok {
+				t.Fatalf("spawn placed off-street in a cell with %d street children: %+v", streets, sp)
+			}
+			if d := h3x.DistanceM(pt(lon, lat), pt(sp.Lon, sp.Lat)); d > s.Content.Rules.Placement.StreetJitterM+1 {
+				t.Fatalf("spawn %.0f m from its street point", d)
+			}
+		}
 	}
 }

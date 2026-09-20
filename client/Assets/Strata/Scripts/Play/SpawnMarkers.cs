@@ -78,6 +78,9 @@ namespace Strata.Play
             r.material.color = CivPalette.Of(sp.Civ);
             var tag = go.AddComponent<MarkerTag>();
             tag.SpawnId = sp.Id;
+            // A generous invisible tap target around the capsule.
+            var hitbox = go.AddComponent<SphereCollider>();
+            hitbox.radius = 1.2f;
 
             var labelGo = new GameObject("Label");
             labelGo.transform.SetParent(go.transform, false);
@@ -120,12 +123,20 @@ namespace Strata.Play
         {
             if (_camera == null) return null;
             var ray = _camera.ScreenPointToRay(screen);
-            if (Physics.Raycast(ray, out var hit, 5000f))
+            // RaycastAll: GO Map buildings and tiles carry colliders too and may
+            // sit in front of a marker from the camera's angle.
+            Spawn best = null;
+            float bestD = float.MaxValue;
+            foreach (var hit in Physics.RaycastAll(ray, 5000f))
             {
                 var tag = hit.collider.GetComponentInParent<MarkerTag>();
-                if (tag != null && _markers.TryGetValue(tag.SpawnId, out var m)) return m.Spawn;
+                if (tag != null && hit.distance < bestD && _markers.TryGetValue(tag.SpawnId, out var m))
+                {
+                    best = m.Spawn;
+                    bestD = hit.distance;
+                }
             }
-            return null;
+            return best;
         }
 
         public sealed class MarkerTag : MonoBehaviour

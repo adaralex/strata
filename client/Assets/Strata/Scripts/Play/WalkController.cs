@@ -59,6 +59,7 @@ namespace Strata.Play
             _card = new ItemCard(_ui);
             _debrief = new Debrief(_ui);
             BuildBottomBar();
+            UI.TapCatcher.Create(_ui.Root).OnTap += OnTap;
 
             _fixes = gameObject.AddComponent<FixSource>();
             _fixes.intervalSeconds = settings.fixIntervalSeconds;
@@ -79,11 +80,6 @@ namespace Strata.Play
             _markers.Update();
             _strip.Tick();
             if (_fight.Active) _fight.Update(Time.deltaTime);
-            if (!_modal && !_fight.Active && Tapped(out var screen))
-            {
-                var sp = _markers.Hit(screen);
-                if (sp != null) TryEngage(sp);
-            }
             if (_fix.HasValue && !_busy)
             {
                 var now = Time.time;
@@ -93,20 +89,27 @@ namespace Strata.Play
             }
         }
 
-        private static bool Tapped(out Vector2 screen)
+        private void OnTap(Vector2 screen)
         {
-            screen = default;
-            if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+            if (_modal || _fight.Active) return;
+            var sp = _markers.Hit(screen);
+            if (sp != null) TryEngage(sp);
+            else SetStatus(NearestHint() ?? "tap a marker to engage it");
+        }
+
+        /// <summary>"nearest: Bog-Wight, 120 m" from the cached spawns and the last fix.</summary>
+        private string NearestHint()
+        {
+            if (_spawns == null || _spawns.Spawns.Count == 0 || !_fix.HasValue) return null;
+            var f = _fix.Value;
+            Spawn best = null;
+            double bestD = double.MaxValue;
+            foreach (var sp in _spawns.Spawns)
             {
-                screen = Input.GetTouch(0).position;
-                return !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject(Input.GetTouch(0).fingerId);
+                var d = Geo.DistanceM(f.Lat, f.Lon, sp.Lat, sp.Lon);
+                if (d < bestD) { bestD = d; best = sp; }
             }
-            if (Input.GetMouseButtonDown(0))
-            {
-                screen = Input.mousePosition;
-                return !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
-            }
-            return false;
+            return best == null ? null :  nearest: {best.Name}, {bestD:0} m{(bestD <= settings.interactionRangeM ? "  TAP IT" : "")}";
         }
 
         private void OnFix(Fix f)
@@ -114,6 +117,7 @@ namespace Strata.Play
             bool first = !_fix.HasValue;
             _fix = f;
             _log.Fix(f.Lat, f.Lon);
+            if (!_modal && !_fight.Active) { var hint = NearestHint(); if (hint != null) SetStatus(hint); }
             if (first || _lookup == null)
             {
                 StartCoroutine(RefreshLookup());

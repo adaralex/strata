@@ -46,6 +46,7 @@ type CostField interface {
 // Stats summarises a build.
 type Stats struct {
 	Cells, ExclCells, Beacons, LivePOIs, ZonedPOIs int
+	WalkCells                                      int
 	Reached                                        int // cells with at least one civ
 }
 
@@ -356,6 +357,53 @@ func Build(in Inputs) (*world.Snapshot, Stats, error) {
 		}
 	}
 	log("terrain: %d water cells, %d coast cells", len(water), len(coast))
+
+	// 7. Walkable ways: one on-street point per r10 cell, the sample nearest
+	// the cell centre, so spawns can stand where a walker can reach them.
+	type wp struct {
+		lat, lon float32
+		d        float64
+	}
+	walk := map[uint64]wp{}
+	for i := range in.Classified.Items {
+		it := &in.Classified.Items[i]
+		if !it.Walkable || it.Feature.Line == nil {
+			continue
+		}
+		for _, p := range h3x.SamplePoints(it.Feature.Line, 20) {
+			r10, err := h3x.FromPoint(p, h3x.ResPlace)
+			if err != nil {
+				continue
+			}
+			parent, err := h3x.Parent(r10, h3x.ResWeight)
+			if err != nil {
+				continue
+			}
+			if _, ok := index[parent]; !ok {
+				continue
+			}
+			c, err := h3x.CenterPoint(r10)
+			if err != nil {
+				continue
+			}
+			d := h3x.DistanceM(p, c)
+			if old, ok := walk[uint64(r10)]; !ok || d < old.d {
+				walk[uint64(r10)] = wp{lat: float32(p.Lat()), lon: float32(p.Lon()), d: d}
+			}
+		}
+	}
+	snap.Walk = make([]uint64, 0, len(walk))
+	for c := range walk {
+		snap.Walk = append(snap.Walk, c)
+	}
+	sort.Slice(snap.Walk, func(i, j int) bool { return snap.Walk[i] < snap.Walk[j] })
+	snap.WalkLat = make([]float32, len(snap.Walk))
+	snap.WalkLon = make([]float32, len(snap.Walk))
+	for i, c := range snap.Walk {
+		snap.WalkLat[i], snap.WalkLon[i] = walk[c].lat, walk[c].lon
+	}
+	st.WalkCells = len(snap.Walk)
+	log("walkable: %d r10 cells carry an on-street point", len(snap.Walk))
 	return snap, st, nil
 }
 

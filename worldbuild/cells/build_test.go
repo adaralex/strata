@@ -259,3 +259,28 @@ func TestBuildWithDriftField(t *testing.T) {
 		t.Fatalf("weights: %+v", w)
 	}
 }
+
+func TestWalkablePoints(t *testing.T) {
+	w, _ := buildFixture(t)
+	if len(w.Snap.Walk) < 5 {
+		t.Fatalf("footway and street should yield on-street points, got %d", len(w.Snap.Walk))
+	}
+	// A point on the footway sits in a walk cell, and the stored point is
+	// within a cell width of it and lies near the way.
+	r10, _ := h3x.FromLatLng(43.5367, 1.3448, h3x.ResPlace)
+	lat, lon, ok := w.Snap.WalkPoint(uint64(r10))
+	if !ok {
+		t.Fatal("footway cell has no walk point")
+	}
+	if d := h3x.DistanceM(orbPt(lon, lat), orbPt(1.3448, 43.5367)); d > 80 {
+		t.Fatalf("walk point %.0f m from the footway sample", d)
+	}
+	// The private service way is not walkable.
+	priv, _ := h3x.FromLatLng(43.5391, 1.3421, h3x.ResPlace)
+	if _, _, ok := w.Snap.WalkPoint(uint64(priv)); ok {
+		// It may share an r10 cell with the footway; only fail if no other way is near.
+		if d := h3x.DistanceM(orbPt(1.3421, 43.5391), orbPt(1.3430, 43.5366)); d > 150 {
+			t.Fatal("a private service road must not produce walk points")
+		}
+	}
+}

@@ -55,6 +55,14 @@ Set the app's server URL to `http://<laptop-ip>:8080`, walk. **End walk** shows 
 log and the three debrief questions and saves a JSON file to the app's persistent data
 path, offered through the share sheet. That file is what phase 0 is judged on.
 
+## After the first phone walk
+
+Two fixes landed after the first 488 m: taps go through the UI event system
+(`TapCatcher`) because reading `UnityEngine.Input` throws when a Unity 6 project has the
+Input System package active, and the status line now shows the nearest spawn and its
+distance on every fix. Server side, spawns now stand on streets and paths; rebuild the
+snapshot (`worldbuild`, snapshot format 4) and restart `worldd` before the next walk.
+
 ## What the client never does
 
 It never decides a drop, a range, an exclusion or the speed gate; it displays what

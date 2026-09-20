@@ -159,6 +159,9 @@
       "$comment": "Private homes are excluded at spawn placement against the building polygon (track 3), not baked into the r10 set: at 66 m cells that would blank every residential street. Decision record 0003."
     }
   ],
+  "walkable": [
+    { "tags": { "highway": ["footway", "path", "pedestrian", "living_street", "residential", "unclassified", "tertiary", "steps", "cycleway", "track"] }, "not": { "access": ["private", "no"], "foot": ["no", "private"] }, "$comment": "Ways a walker can use. Spawns snap to a point on one of these (decision record 0004 amendment): a monster in a back garden cannot be reached within 40 m." }
+  ],
   "terrain": [
     { "id": "water", "tags": { "natural": ["water"] } },
     { "id": "water", "tags": { "landuse": ["reservoir", "basin"] } },

@@ -27,7 +27,7 @@ const (
 	FileCivs    = "civs.json"
 
 	snapshotMagic   = "STR8"
-	snapshotVersion = 3
+	snapshotVersion = 4
 )
 
 // Snapshot is one immutable world build (PLAN.md §14 step 4/5).
@@ -51,6 +51,12 @@ type Snapshot struct {
 	// ring beyond the excluded cells so a point just outside still gets tested.
 	ZoneIdx     []uint64
 	ZoneIdxZone []uint32
+	// Walk is the sorted set of r10 cells a pedestrian way passes through;
+	// WalkLat/WalkLon[i] is a point on that way inside Walk[i]. Spawn
+	// placement snaps to these so monsters stand on streets and paths.
+	Walk    []uint64
+	WalkLat []float32
+	WalkLon []float32
 
 	Beacons []Beacon
 	POIs    []POI
@@ -256,7 +262,22 @@ func (s *Snapshot) encodeCells(w io.Writer) error {
 	if err := put(s.ZoneIdx); err != nil {
 		return err
 	}
-	return put(s.ZoneIdxZone)
+	if err := put(s.ZoneIdxZone); err != nil {
+		return err
+	}
+	if len(s.WalkLat) != len(s.Walk) || len(s.WalkLon) != len(s.Walk) {
+		return fmt.Errorf("snapshot: walk arrays disagree")
+	}
+	if err := put(uint32(len(s.Walk))); err != nil {
+		return err
+	}
+	if err := put(s.Walk); err != nil {
+		return err
+	}
+	if err := put(s.WalkLat); err != nil {
+		return err
+	}
+	return put(s.WalkLon)
 }
 
 // Read loads a snapshot directory.
@@ -376,6 +397,22 @@ func decodeCells(r io.Reader) (*Snapshot, error) {
 	if err := get(s.ZoneIdxZone); err != nil {
 		return nil, err
 	}
+	var nWalk uint32
+	if err := get(&nWalk); err != nil {
+		return nil, err
+	}
+	s.Walk = make([]uint64, nWalk)
+	s.WalkLat = make([]float32, nWalk)
+	s.WalkLon = make([]float32, nWalk)
+	if err := get(s.Walk); err != nil {
+		return nil, err
+	}
+	if err := get(s.WalkLat); err != nil {
+		return nil, err
+	}
+	if err := get(s.WalkLon); err != nil {
+		return nil, err
+	}
 	return s, nil
 }
 
@@ -491,4 +528,14 @@ func (s *Snapshot) ZoneContaining(lat, lon float64) (*Zone, bool) {
 		}
 	}
 	return nil, false
+}
+
+// WalkPoint returns a point on a pedestrian way inside an r10 cell, if the
+// cell has one.
+func (s *Snapshot) WalkPoint(r10 uint64) (lat, lon float64, ok bool) {
+	i := sort.Search(len(s.Walk), func(i int) bool { return s.Walk[i] >= r10 })
+	if i < len(s.Walk) && s.Walk[i] == r10 {
+		return float64(s.WalkLat[i]), float64(s.WalkLon[i]), true
+	}
+	return 0, 0, false
 }

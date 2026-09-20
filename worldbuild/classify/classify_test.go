@@ -115,8 +115,8 @@ func TestReadAndClassifyFixture(t *testing.T) {
 	if f := byRef["r/300"]; f == nil || len(f.Polygon) != 1 || len(f.Polygon[0]) != 5 {
 		t.Fatalf("forest relation should chain into one 4-point ring, got %+v", byRef["r/300"])
 	}
-	if _, ok := byRef["w/110"]; ok {
-		t.Fatal("roundabout is not interesting")
+	if f := byRef["w/110"]; f == nil || f.Line == nil || f.Polygon != nil {
+		t.Fatal("the roundabout is a walkable residential way and must stay a line, never a polygon")
 	}
 
 	lists, err := LoadLists(filepath.Join("..", "..", "data"), rules)

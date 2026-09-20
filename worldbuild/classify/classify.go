@@ -85,6 +85,8 @@ type Classified struct {
 	IsExclusionZone bool
 	Exclusion       *Exclusion
 	Terrain         []string
+	// Walkable marks a pedestrian way (a line feature).
+	Walkable bool
 }
 
 // Result is the classified extract.
@@ -99,6 +101,7 @@ type ClassifyStats struct {
 	ByExclusion map[string]int
 	Excluded    int
 	Terrain     map[string]int
+	Walkable    int
 }
 
 // Run classifies every feature of an extract.
@@ -106,7 +109,10 @@ func Run(ex *Extract, rules *Rules, lists *Lists) *Result {
 	res := &Result{Stats: ClassifyStats{ByClass: map[string]int{}, ByExclusion: map[string]int{}, Terrain: map[string]int{}}}
 	for i := range ex.Features {
 		f := &ex.Features[i]
-		c := Classified{Feature: f, Terrain: rules.MatchTerrain(f.Tags)}
+		c := Classified{Feature: f, Terrain: rules.MatchTerrain(f.Tags), Walkable: f.Line != nil && rules.IsWalkable(f.Tags)}
+		if c.Walkable {
+			res.Stats.Walkable++
+		}
 		for _, t := range c.Terrain {
 			res.Stats.Terrain[t]++
 		}
@@ -150,7 +156,7 @@ func Run(ex *Extract, rules *Rules, lists *Lists) *Result {
 				}
 			}
 		}
-		if len(c.Hits) == 0 && c.Excluded == "" && len(c.Terrain) == 0 {
+		if len(c.Hits) == 0 && c.Excluded == "" && len(c.Terrain) == 0 && !c.Walkable {
 			continue
 		}
 		res.Items = append(res.Items, c)
