@@ -4,13 +4,13 @@
   "epoch_seconds": 900,
   "propagation": { "day": 0.15, "twilight": 0.5, "night": 0.85, "moon_bonus": 0.1 },
   "count": {
-    "base": 3,
+    "base": 10,
     "per_log2_density": 0.5,
-    "max": 12,
+    "max": 24,
     "wild_mul": 1.5,
     "after_midnight_mul": 0.5,
     "after_midnight_urban_band_max": 1,
-    "$comment": "n = base + floor(log2(1 + poi_count) * per_log2_density); a village gets 3, a city centre 8. After local midnight in urban band 0..1 the count halves (PLAN §11 night dampening)."
+    "$comment": "TEST SETTING 2026-09-20: base 10 / max 24 so the phase 0 walk finds a spawn within ~80 m; the design values are base 3 / max 12 (a village gets 3, a city centre 8). n = base + floor(log2(1 + poi_count) * per_log2_density). After local midnight in urban band 0..1 the count halves (PLAN §11 night dampening)."
   },
   "value": {
     "reference_density": 32,
