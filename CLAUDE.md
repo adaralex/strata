@@ -75,6 +75,7 @@ builder), `/worldbuild/cmd/worldbuild` (the pipeline CLI), `/worldbuild/drift` a
 (civs, POI classes, spawn parameters, bestiary, items, drift costs), `/data` (fifteen civilization layers, curated Toulouse
 beacons, block and allow lists). Go module at the repo root. See `worldbuild/README.md`
 to run the Midi-Pyrénées build and the drift solve, `server/README.md` to serve it, and
+`docs/handoff-phase0.md` for where phase 0 stands and what to do next, and
 `client/README.md` to set up the Unity walk test (`/client/Assets/Strata`: source only; the
 Unity project and the GO Map asset live outside git). Track 4's source is written; the
 first editor wiring and device build are pending. Decisions so far are in `docs/decisions`.
