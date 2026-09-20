@@ -32,6 +32,10 @@ namespace Strata.Play
         private Fight _fight;
         private ItemCard _card;
         private Debrief _debrief;
+        private PlayerStore _store;
+        private EquipmentView _equipment;
+        private InventoryView _inventory;
+        private CodexView _codex;
         private FixSource _fixes;
         private readonly WalkLog _log = new WalkLog();
 
@@ -58,6 +62,10 @@ namespace Strata.Play
             _fight = new Fight(_ui);
             _card = new ItemCard(_ui);
             _debrief = new Debrief(_ui);
+            _store = PlayerStore.Load();
+            _equipment = new EquipmentView(_ui, _store);
+            _inventory = new InventoryView(_ui, _store);
+            _codex = new CodexView(_ui, _store);
             BuildBottomBar();
             UI.TapCatcher.Create(_ui.Root).OnTap += OnTap;
 
@@ -109,7 +117,7 @@ namespace Strata.Play
                 var d = Geo.DistanceM(f.Lat, f.Lon, sp.Lat, sp.Lon);
                 if (d < bestD) { bestD = d; best = sp; }
             }
-            return best == null ? null :  nearest: {best.Name}, {bestD:0} m{(bestD <= settings.interactionRangeM ? "  TAP IT" : "")}";
+            return best == null ? null : $"nearest: {best.Name}, {bestD:0} m{(bestD <= settings.interactionRangeM ? "  TAP IT" : "")}";
         }
 
         private void OnFix(Fix f)
@@ -187,6 +195,7 @@ namespace Strata.Play
             _fight.Begin(sp, (won, auto) =>
             {
                 _log.Fought(won, auto);
+                _store.RecordFight(sp, won, auto);
                 if (!won) { _modal = false; SetStatus($"{sp.Name} slipped away"); return; }
                 StartCoroutine(Collapse(sp));
             });
@@ -207,6 +216,7 @@ namespace Strata.Play
                 }
                 _markers.Remove(sp.Id);
                 _log.Received(r.Value.Item);
+                _store.AddItem(r.Value.Item);
                 _card.Show(r.Value, () => { _modal = false; });
                 SetStatus($"{r.Value.Item.Name} is yours");
             });
@@ -214,10 +224,14 @@ namespace Strata.Play
 
         private void BuildBottomBar()
         {
-            var bar = _ui.Bar("BottomBar", _ui.Root, UIKit.Panel, false, 200);
+            var bar = _ui.Bar("BottomBar", _ui.Root, UIKit.Panel, false, 310);
             var col = _ui.Column(bar, 24, 10);
             col.childAlignment = TextAnchor.LowerLeft;
             _statusText = _ui.Text(bar, "", 32, false, TextAlignmentOptions.BottomLeft, new Color(0.75f, 0.75f, 0.75f));
+            var views = _ui.Row(bar, 90, 16);
+            _ui.Button_(views, "Gear", UIKit.PanelLight, () => OpenView(_equipment.Show), 90, TextAlignmentOptions.Center, UIKit.Ink);
+            _ui.Button_(views, "Bag", UIKit.PanelLight, () => OpenView(_inventory.Show), 90, TextAlignmentOptions.Center, UIKit.Ink);
+            _ui.Button_(views, "Codex", UIKit.PanelLight, () => OpenView(_codex.Show), 90, TextAlignmentOptions.Center, UIKit.Ink);
             var row = new GameObject("Row", typeof(RectTransform), typeof(UnityEngine.UI.HorizontalLayoutGroup), typeof(UnityEngine.UI.LayoutElement));
             row.transform.SetParent(bar, false);
             var h = row.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>();
@@ -227,6 +241,13 @@ namespace Strata.Play
             var rrt = row.GetComponent<RectTransform>();
             _ui.Button_(rrt, "End walk", UIKit.Accent, () => { if (_modal) return; _modal = true; _debrief.Show(_log, () => _modal = false); }, 90);
             _ui.Button_(rrt, "Server", UIKit.PanelLight, ShowSettings, 90);
+        }
+
+        private void OpenView(Action<Action> show)
+        {
+            if (_modal) return;
+            _modal = true;
+            show(() => _modal = false);
         }
 
         private void ShowSettings()

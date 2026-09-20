@@ -15,9 +15,22 @@ namespace Strata.UI
             { "lapita", Hex("0077B6") }, { "hopewell", Hex("C77DFF") }, { "aksum", Hex("E76F51") },
         };
 
+        /// <summary>The colour of the residual: the eleven civilizations folded into one number.</summary>
+        public static readonly Color Others = new Color(0.45f, 0.45f, 0.45f);
+
         public static Color Of(string civ) => civ != null && Colours.TryGetValue(civ, out var c) ? c : Color.gray;
 
         public static string Label(string civ) => string.IsNullOrEmpty(civ) ? "?" : char.ToUpper(civ[0]) + civ.Substring(1);
+
+        /// <summary>The label wrapped in a TextMeshPro colour tag in the civilization's colour.</summary>
+        public static string Coloured(string civ) => $"<color=#{ColorUtility.ToHtmlStringRGB(Of(civ))}>{Label(civ)}</color>";
+
+        /// <summary>Display names for the plan's four stats (PLAN §8); other keys pass through.</summary>
+        public static string StatLabel(string key) => key switch
+        {
+            "might" => "Might", "ward" => "Ward", "resonance" => "Resonance", "fortune" => "Fortune",
+            null => "?", _ => key,
+        };
 
         private static Color Hex(string h)
         {

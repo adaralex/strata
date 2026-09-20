@@ -18,6 +18,8 @@ namespace Strata.UI
 
         public static readonly Color Ink = new Color(0.95f, 0.94f, 0.90f);
         public static readonly Color Panel = new Color(0.08f, 0.09f, 0.11f, 0.92f);
+        /// <summary>For full-screen views, so the HUD underneath never shows through.</summary>
+        public static readonly Color PanelOpaque = new Color(0.08f, 0.09f, 0.11f, 1f);
         public static readonly Color PanelLight = new Color(0.16f, 0.17f, 0.20f, 0.95f);
         public static readonly Color Warn = new Color(0.85f, 0.35f, 0.25f, 0.95f);
         public static readonly Color Accent = new Color(0.93f, 0.77f, 0.42f);
@@ -102,14 +104,14 @@ namespace Strata.UI
             t.fontSize = size;
             t.color = colour ?? Ink;
             t.alignment = align;
-            t.enableWordWrapping = true;
+            t.textWrappingMode = TextWrappingModes.Normal;
             t.raycastTarget = false;
             var le = go.AddComponent<LayoutElement>();
             le.minHeight = size * 1.2f;
             return t;
         }
 
-        public Button Button_(RectTransform parent, string label, Color colour, System.Action onClick, float height = 120)
+        public Button Button_(RectTransform parent, string label, Color colour, System.Action onClick, float height = 120, TextAlignmentOptions align = TextAlignmentOptions.Center, Color? textColour = null)
         {
             var go = new GameObject("Button " + label, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
@@ -119,12 +121,87 @@ namespace Strata.UI
             var le = go.AddComponent<LayoutElement>();
             le.minHeight = height;
             le.preferredHeight = height;
-            var t = Text(go.GetComponent<RectTransform>(), label, 44, false, TextAlignmentOptions.Center, Color.black);
+            var t = Text(go.GetComponent<RectTransform>(), label, 44, false, align, textColour ?? Color.black);
             var trt = t.GetComponent<RectTransform>();
             trt.anchorMin = Vector2.zero;
             trt.anchorMax = Vector2.one;
-            trt.offsetMin = trt.offsetMax = Vector2.zero;
+            trt.offsetMin = new Vector2(24, 8);
+            trt.offsetMax = new Vector2(-24, -8);
             return b;
+        }
+
+        /// <summary>A horizontal strip of equal-width children inside a column.</summary>
+        public RectTransform Row(RectTransform parent, float height, float spacing = 16)
+        {
+            var go = new GameObject("Row", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+            go.transform.SetParent(parent, false);
+            var h = go.GetComponent<HorizontalLayoutGroup>();
+            h.spacing = spacing;
+            h.childForceExpandWidth = true;
+            h.childControlWidth = true;
+            h.childControlHeight = true;
+            h.childForceExpandHeight = true;
+            var le = go.GetComponent<LayoutElement>();
+            le.minHeight = height;
+            le.preferredHeight = height;
+            le.flexibleHeight = 0; // the group would otherwise report its children's flexible height and swell
+            return go.GetComponent<RectTransform>();
+        }
+
+        /// <summary>A title line with a close control, for full-screen views.</summary>
+        public void Header(RectTransform parent, string title, System.Action close)
+        {
+            var row = Row(parent, 90, 16);
+            var t = Text(row, title, 56, false, TextAlignmentOptions.Left, Accent);
+            t.GetComponent<LayoutElement>().flexibleWidth = 1;
+            var b = Button_(row, "Close", PanelLight, close, 90, TextAlignmentOptions.Center, Ink);
+            var le = b.GetComponent<LayoutElement>();
+            le.flexibleWidth = 0;
+            le.minWidth = le.preferredWidth = 220;
+        }
+
+        /// <summary>A vertical scroll area that takes the column's remaining height; returns its content column.</summary>
+        public RectTransform Scroll(RectTransform parent, float spacing = 16)
+        {
+            var go = new GameObject("Scroll", typeof(RectTransform), typeof(ScrollRect), typeof(LayoutElement));
+            go.transform.SetParent(parent, false);
+            var le = go.GetComponent<LayoutElement>();
+            le.flexibleHeight = 1;
+            le.minHeight = 200;
+
+            var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D), typeof(Image));
+            viewport.transform.SetParent(go.transform, false);
+            var vimg = viewport.GetComponent<Image>();
+            vimg.color = new Color(0, 0, 0, 0.001f);
+            vimg.raycastTarget = true; // dragging needs a target
+            var vrt = viewport.GetComponent<RectTransform>();
+            vrt.anchorMin = Vector2.zero;
+            vrt.anchorMax = Vector2.one;
+            vrt.offsetMin = vrt.offsetMax = Vector2.zero;
+
+            var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            content.transform.SetParent(viewport.transform, false);
+            var crt = content.GetComponent<RectTransform>();
+            crt.anchorMin = new Vector2(0, 1);
+            crt.anchorMax = new Vector2(1, 1);
+            crt.pivot = new Vector2(0.5f, 1);
+            crt.offsetMin = crt.offsetMax = Vector2.zero;
+            var v = content.GetComponent<VerticalLayoutGroup>();
+            v.padding = new RectOffset(0, 0, 0, 40);
+            v.spacing = spacing;
+            v.childForceExpandHeight = false;
+            v.childControlHeight = true;
+            v.childControlWidth = true;
+            content.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var sr = go.GetComponent<ScrollRect>();
+            sr.content = crt;
+            sr.viewport = vrt;
+            sr.horizontal = false;
+            sr.vertical = true;
+            sr.movementType = ScrollRect.MovementType.Clamped;
+            sr.scrollSensitivity = 40;
+            return crt;
         }
 
         public TMP_InputField Input(RectTransform parent, string value, string placeholder)

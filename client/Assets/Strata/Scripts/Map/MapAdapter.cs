@@ -14,7 +14,7 @@ namespace Strata.Map
     /// before GO Map is set up.
     ///
     /// If your GO Map version names things differently, this is the file to fix: the two
-    /// calls are Coordinates.convertCoordinateToVector3() and the LocationManager's current
+    /// calls are Coordinates.convertCoordinateToVector() and the LocationManager's current
     /// location.
     /// </summary>
     public sealed class MapAdapter : MonoBehaviour
@@ -35,7 +35,7 @@ namespace Strata.Map
             if (goMap != null)
             {
                 var c = new Coordinates(lat, lon, 0);
-                return c.convertCoordinateToVector3();
+                return c.convertCoordinateToVector();
             }
 #endif
             if (!_originSet)
