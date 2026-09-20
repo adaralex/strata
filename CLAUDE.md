@@ -56,7 +56,7 @@ These are not preferences. Flag it loudly if a task would violate one.
 ## Repo layout (target)
 
 ```
-/client          Unity project: GO Map world map, combat scene, native passive collector
+/client          Unity source: GO Map world map, walk-test scene; project created locally
 /server          Go services: world, combat, player, beacon, season, trust
 /worldbuild      Offline pipeline: OSM extract -> POI classify -> H3 cell weights
 /proto           Protobuf schemas shared by client and server
@@ -74,8 +74,10 @@ builder), `/worldbuild/cmd/worldbuild` (the pipeline CLI), `/worldbuild/drift` a
 `/worldbuild/cmd/drift` (the planet cost field from Natural Earth terrain), `/rules`
 (civs, POI classes, spawn parameters, bestiary, items, drift costs), `/data` (fifteen civilization layers, curated Toulouse
 beacons, block and allow lists). Go module at the repo root. See `worldbuild/README.md`
-to run the Midi-Pyrénées build and the drift solve, and `server/README.md` to serve it.
-Track 4 is not started. Decisions so far are in `docs/decisions`.
+to run the Midi-Pyrénées build and the drift solve, `server/README.md` to serve it, and
+`client/README.md` to set up the Unity walk test (`/client/Assets/Strata`: source only; the
+Unity project and the GO Map asset live outside git). Track 4's source is written; the
+first editor wiring and device build are pending. Decisions so far are in `docs/decisions`.
 
 ## Phase 0 spike — the only work in scope right now
 

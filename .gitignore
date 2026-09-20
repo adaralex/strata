@@ -7,3 +7,15 @@
 /bin/
 *.test
 *.out
+# Unity: the project is created locally; only Assets/Strata and Packages/manifest.json are ours.
+/client/Library/
+/client/Temp/
+/client/Logs/
+/client/UserSettings/
+/client/obj/
+/client/Build/
+/client/Assets/GoMap/
+/client/Assets/GoMap.meta
+/client/Assets/Plugins/
+*.csproj
+*.sln
