@@ -1,0 +1,113 @@
+{
+  "$comment": "Item archetypes (PLAN §7): civilization x archetype x tier x affixes x provenance. 'fact' is real and per civilization; 'fiction' is the Anvil's line. They are separate fields and must stay in separate panels and typefaces on the client (non-negotiable 5). Hybrids carry no fact at all. Phase 0 names the three Cugnaux civilizations; the other twelve fall back to 'generic'.",
+  "version": 1,
+  "archetypes": [
+    {
+      "id": "main.edge", "slot": "main",
+      "names": { "hallstatt": "La Tène longsword", "phoenicia": "Bronze leaf-blade", "etruria": "Kopis", "generic": "Edge" },
+      "fact": {
+        "hallstatt": "Long iron swords with decorated scabbards define the La Tène culture; Gaulish warriors of the Toulouse basin carried them.",
+        "phoenicia": "Leaf-shaped bronze blades circulated the Mediterranean with Phoenician trade in the early Iron Age.",
+        "etruria": "The kopis is a forward-curving single-edged blade shown in Etruscan and Greek art from the 6th century BCE."
+      },
+      "fiction": "It cuts toward the ground, always."
+    },
+    {
+      "id": "main.haft", "slot": "main",
+      "names": { "hallstatt": "Iron axe of the salt road", "phoenicia": "Ship's boarding axe", "etruria": "Hammer of Charun", "generic": "Haft" },
+      "fact": {
+        "hallstatt": "Iron axes with wooden hafts survive from the Hallstatt salt mines, where brine preserved the wood.",
+        "phoenicia": "Bronze axe heads travelled as tools and as ingots in Phoenician cargoes.",
+        "etruria": "Charun's hammer is an attribute in Etruscan tomb painting, not a weapon found in graves."
+      },
+      "fiction": "Weight where the door is."
+    },
+    {
+      "id": "main.focus", "slot": "main",
+      "names": { "hallstatt": "Carnyx", "phoenicia": "Staff of the Sign", "etruria": "Lituus", "generic": "Focus" },
+      "fact": {
+        "hallstatt": "The carnyx was a bronze war trumpet held vertically, its bell shaped as a boar's head.",
+        "phoenicia": "The sign of Tanit appears on Carthaginian stelae from the 5th century BCE.",
+        "etruria": "The lituus, a curved augural staff, passed from Etruscan diviners to Roman priests."
+      },
+      "fiction": "Point it at the ground and the ground answers."
+    },
+    {
+      "id": "off.guard", "slot": "off",
+      "names": { "hallstatt": "Shield with bronze boss", "phoenicia": "Round shield with ivory plaque", "etruria": "Bronze mirror", "generic": "Guard" },
+      "fact": {
+        "hallstatt": "Iron Age shields were wood and leather with a metal boss; only the fittings survive in graves.",
+        "phoenicia": "Carved ivory plaques in Levantine style decorated furniture and fittings traded by Phoenician workshops.",
+        "etruria": "Etruscan bronze mirrors, engraved with myths on the back, were placed in women's tombs by the thousand."
+      },
+      "fiction": "What it reflects is a little behind you."
+    },
+    {
+      "id": "off.vessel", "slot": "off",
+      "names": { "hallstatt": "Bronze cauldron", "phoenicia": "Murex dye jar", "etruria": "Bucchero kantharos", "generic": "Vessel" },
+      "fact": {
+        "hallstatt": "Sheet-bronze cauldrons were feasting and votive vessels across the Hallstatt and La Tène world.",
+        "phoenicia": "Purple dye was worked in vats and jars beside the sea; shell middens mark the dye works.",
+        "etruria": "Bucchero is the glossy black pottery of Etruria, 7th to 5th century BCE; the kantharos is its two-handled cup."
+      },
+      "fiction": "Never quite empty."
+    },
+    {
+      "id": "body.wrap", "slot": "body",
+      "names": { "hallstatt": "Checked wool cloak", "phoenicia": "Purple-hemmed tunic", "etruria": "Linen thorax", "generic": "Wrap" },
+      "fact": {
+        "hallstatt": "Wool twills in checks and stripes survive from the Hallstatt salt mines, the oldest tartan-like textiles in Europe.",
+        "phoenicia": "Tyrian purple was the most expensive dye of antiquity, worth more than its weight in gold.",
+        "etruria": "The linen corselet was the light armour of Etruscan and Greek warriors."
+      },
+      "fiction": "Warm on the side that faces down."
+    },
+    {
+      "id": "head.mask", "slot": "head",
+      "names": { "hallstatt": "Crested helmet", "phoenicia": "Grimacing mask", "etruria": "Negau helmet", "generic": "Mask" },
+      "fact": {
+        "hallstatt": "Iron Age helmets with animal crests appear on the Gundestrup cauldron and in the Ciumești grave.",
+        "phoenicia": "Grimacing terracotta masks were placed in Carthaginian tombs, 7th to 5th century BCE.",
+        "etruria": "Negau-type bronze helmets, named for a hoard in Slovenia, were made in Etruria from the 5th century BCE."
+      },
+      "fiction": "It fits. That is the worrying part."
+    },
+    {
+      "id": "charm.amulet", "slot": "charm",
+      "names": { "hallstatt": "Gold torc of Fenouillet type", "phoenicia": "Glass pendant head", "etruria": "Bulla", "generic": "Amulet" },
+      "fact": {
+        "hallstatt": "Gold torcs found at Fenouillet, Haute-Garonne, in 1841 are in the Musée Saint-Raymond, Toulouse; 3rd to 2nd century BCE.",
+        "phoenicia": "Core-formed glass pendant heads with striped beards were Phoenician trade goods, 6th to 3rd century BCE.",
+        "etruria": "The bulla is a lentoid pendant worn by Etruscan children and warriors; Rome adopted it."
+      },
+      "fiction": "It remembers a neck."
+    },
+    {
+      "id": "relic", "slot": "relic",
+      "names": { "hallstatt": "Ingot of the gold of Tolosa", "phoenicia": "Carved ivory plaque", "etruria": "Bronze liver of Piacenza", "generic": "Keystone" },
+      "fact": {
+        "hallstatt": "The gold of Tolosa, sacred to the Tectosages, was seized by the consul Caepio in 106 BCE and lost; 'to have the gold of Tolosa' meant to be cursed.",
+        "phoenicia": "Levantine ivories, carved with sphinxes and palmettes, furnished palaces from Nimrud to Spain.",
+        "etruria": "The Piacenza liver, a 2nd-century BCE bronze model of a sheep's liver, is divided into regions named for gods."
+      },
+      "fiction": "Made of the message itself."
+    }
+  ],
+  "hybrid_epithets": {
+    "$comment": "Hybrid names are dominant epithet plus dominant archetype name; PLAN §7 wants a written table per ordered pair, and for phase 0 the pair contributes the epithet. 'dominant>secondary'.",
+    "hallstatt>phoenicia": "murex-stained",
+    "hallstatt>etruria": "fresco-painted",
+    "phoenicia>hallstatt": "torc-bound",
+    "phoenicia>etruria": "bucchero-black",
+    "etruria>hallstatt": "salt-crusted",
+    "etruria>phoenicia": "glass-eyed"
+  },
+  "edibles": [
+    { "id": "hallstatt.cauldron_broth", "civ": "hallstatt", "name": "Cauldron broth", "buff": { "stat": "ward", "pct": 10, "minutes": 20 }, "fact": "Iron Age feasting centred on the cauldron; residues show meat and grain stews.", "fiction": "Still warm." },
+    { "id": "hallstatt.salies_salt", "civ": "hallstatt", "name": "Salt of Salies", "buff": { "stat": "might", "pct": 10, "minutes": 20 }, "fact": "Salies-du-Salat, Haute-Garonne, worked a salt spring from antiquity.", "fiction": "Keeps more than food." },
+    { "id": "phoenicia.isthmus_wine", "civ": "phoenicia", "name": "Isthmus wine", "buff": { "stat": "resonance", "pct": 10, "minutes": 20 }, "fact": "Wine amphorae reached the Toulouse basin overland from the Mediterranean via the Aude.", "fiction": "The jar remembers the sea." },
+    { "id": "phoenicia.murex_stew", "civ": "phoenicia", "name": "Murex stew", "buff": { "stat": "fortune", "pct": 10, "minutes": 20 }, "fact": "The dye snails were eaten too; middens hold both cracked and whole shells.", "fiction": "Purple all the way down." },
+    { "id": "etruria.banquet_fig", "civ": "etruria", "name": "Banquet fig", "buff": { "stat": "fortune", "pct": 10, "minutes": 20 }, "fact": "Figs, grapes and eggs appear on Etruscan banquet tables in tomb painting.", "fiction": "From a vintage not yet grown." },
+    { "id": "generic.resonance_bread", "civ": "generic", "name": "Resonance bread", "buff": { "stat": "ward", "pct": 5, "minutes": 15 }, "fact": "", "fiction": "Baked above, hummed below." }
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "$comment": "Monsters as data (PLAN §5 'spawn rules as data, not code'). Each is a warning the Anvil shapes in a local costume: the civilization's own material culture blended with the folklore of the ground it surfaces on. For phase 0 that ground is the Toulouse basin, Gascony and the Pyrenees. 'when' is a predicate over the condition vector and cell statics; fields: is_night, phase, moon_illumination, propagation, after_midnight, water_band (0 nearest..3), wild, urban_band (0..3), beacon_grade, poi_density, purity, weather, precip, storm, fog, frost. 'note' is the real-world source and never reaches a player unlabelled; 'fiction' is the Anvil's line (non-negotiable 5).",
+  "version": 1,
+  "monsters": [
+    {
+      "id": "hallstatt.tectosage_warden", "civ": "hallstatt", "name": "Hoard-Warden of the Sacred Lake",
+      "weight": 3, "tags": ["guardian", "gold"], "loot_bias": { "archetype": "relic", "tier_shift": 1 },
+      "when": {},
+      "note": "The Volcae Tectosages of Tolosa sank gold in sacred lakes; Caepio seized it in 106 BCE and it vanished. 'Aurum Tolosanum habet' became the Roman proverb for cursed gain.",
+      "fiction": "It counts the ingots still under the water and it knows exactly how many are missing."
+    },
+    {
+      "id": "hallstatt.carnyx_howler", "civ": "hallstatt", "name": "Carnyx Howler",
+      "weight": 2, "tags": ["war"], "loot_bias": { "archetype": "main.edge", "tier_shift": 0 },
+      "when": { "any": [ { "is_night": true }, { "propagation": { "gte": 0.5 } } ] },
+      "weight_mods": [ { "if": { "is_night": true }, "mul": 1.5 } ],
+      "note": "The carnyx was a tall bronze war trumpet with a boar's-head bell; seven were found at Tintignac in 2004.",
+      "fiction": "A note held so long the boar's head has learned to breathe."
+    },
+    {
+      "id": "hallstatt.tantugou", "civ": "hallstatt", "name": "Tantugou of the Fields",
+      "weight": 2, "tags": ["edible", "harvest"], "loot_bias": { "archetype": "off.vessel", "tier_shift": 0 },
+      "when": { "all": [ { "wild": true }, { "phase": { "in": ["day", "twilight"] } } ] },
+      "note": "Tantugou is the old man of the fields in the folklore of Comminges and Luchon, Haute-Garonne, who guards crops and punishes thieves.",
+      "fiction": "It has kept the harvest safe for two thousand years and has finally come to ask who it was keeping it for."
+    },
+    {
+      "id": "hallstatt.becut", "civ": "hallstatt", "name": "Bécut",
+      "weight": 1.5, "tags": ["giant"], "loot_bias": { "archetype": "main.haft", "tier_shift": 1 },
+      "when": { "all": [ { "is_night": true }, { "urban_band": { "lte": 1 } } ] },
+      "note": "The Bécut is the one-eyed giant of Gascon and Béarnais tales, a Pyrenean cousin of the Cyclops who keeps sheep and eats shepherds.",
+      "fiction": "One eye, because the other was traded below for a look at the sun."
+    },
+    {
+      "id": "hallstatt.matagot", "civ": "hallstatt", "name": "Matagot",
+      "weight": 1.5, "tags": ["fortune"], "loot_bias": { "archetype": "charm.amulet", "tier_shift": 1 },
+      "when": { "urban_band": { "gte": 2 } },
+      "note": "The matagot is the money cat of Gascony and Languedoc: fed first at every meal, it repays the house with a gold coin each morning.",
+      "fiction": "It still leaves a coin every morning. Nobody has checked which mint."
+    },
+    {
+      "id": "hallstatt.hada", "civ": "hallstatt", "name": "Hada of the Spring",
+      "weight": 2, "tags": ["water", "fae"], "loot_bias": { "archetype": "off.guard", "tier_shift": 0 },
+      "when": { "water_band": { "lte": 1 } },
+      "note": "The hadas or encantadas are the fairy women of Pyrenean springs and caves, washing linen at dawn and vanishing when watched.",
+      "fiction": "The linen it washes has never been dry and was never linen."
+    },
+    {
+      "id": "hallstatt.salt_revenant", "civ": "hallstatt", "name": "Salt-Road Revenant",
+      "weight": 1.5, "tags": ["salt"], "loot_bias": { "archetype": "body.wrap", "tier_shift": 1 },
+      "when": { "phase": { "in": ["twilight", "night"] } },
+      "note": "Hallstatt is named for the Austrian salt mines whose brine preserved Iron Age wool, leather and food; Salies-du-Salat in Comminges worked its own salt spring.",
+      "fiction": "Salt kept its cloak, its bread and its grudge."
+    },
+    {
+      "id": "hallstatt.cauldron_thing", "civ": "hallstatt", "name": "Cauldron-Thing",
+      "weight": 2, "tags": ["edible", "feast"], "loot_bias": { "archetype": "off.vessel", "tier_shift": 0 },
+      "when": {},
+      "note": "Great bronze and silver cauldrons were the feasting and votive vessels of the Iron Age; the Gundestrup cauldron is the best known.",
+      "fiction": "Whatever is in it is still warm."
+    },
+    {
+      "id": "hallstatt.noria_wheel", "civ": "hallstatt", "name": "Noria-Wheel Revenant",
+      "weight": 2, "tags": ["water", "wheel"], "loot_bias": { "archetype": "charm.amulet", "tier_shift": 0 },
+      "when": { "all": [ { "beacon_grade": { "gte": 1 } }, { "water_band": { "lte": 1 } } ] },
+      "note": "Cugnaux's norias are chain-and-bucket well wheels, a local heritage trail; several are mapped as ruins.",
+      "fiction": "It turns without water, lifting buckets of something else."
+    },
+    {
+      "id": "hallstatt.bear_son", "civ": "hallstatt", "name": "Bear-Son of the Pyrenees",
+      "weight": 1.5, "tags": ["wild", "bear"], "loot_bias": { "archetype": "main.haft", "tier_shift": 1 },
+      "when": { "wild": true },
+      "note": "Jean de l'Ours, son of a woman and a bear, is the Pyrenean folk hero who carries an iron staff no smith could lift.",
+      "fiction": "The staff was forged below, and it wants to know who is still using iron up here."
+    },
+    {
+      "id": "hallstatt.taur", "civ": "hallstatt", "name": "The Taur",
+      "weight": 1, "tags": ["bull"], "loot_bias": { "archetype": "head.mask", "tier_shift": 1 },
+      "when": { "urban_band": { "gte": 2 } },
+      "note": "Toulouse's rue du Taur is named for the bull that, in the city's founding legend, dragged Saturninus through the streets in 250 CE.",
+      "fiction": "It has forgotten who it was dragging and remembers only the street."
+    },
+
+    {
+      "id": "phoenicia.garonne_drac", "civ": "phoenicia", "name": "Drac of the Garonne",
+      "weight": 3, "tags": ["water", "serpent"], "loot_bias": { "archetype": "off.vessel", "tier_shift": 1 },
+      "when": { "water_band": { "lte": 1 } },
+      "weight_mods": [ { "if": { "is_night": true }, "mul": 1.5 } ],
+      "note": "The drac is the shape-shifting water spirit of Occitan rivers; Toulouse tales place one under the Garonne bridges, luring washerwomen with floating rings.",
+      "fiction": "The harbour serpent came up the isthmus with the amphorae and stayed for the river."
+    },
+    {
+      "id": "phoenicia.glass_wraith", "civ": "phoenicia", "name": "Glass-Bead Wraith",
+      "weight": 2, "tags": ["glass"], "loot_bias": { "archetype": "charm.amulet", "tier_shift": 0 },
+      "when": { "is_night": true },
+      "note": "Core-formed glass pendant heads with bulging eyes and striped beards were Phoenician trade goods across the Mediterranean, 6th to 3rd century BCE.",
+      "fiction": "Every bead is an eye and every eye is keeping count."
+    },
+    {
+      "id": "phoenicia.tanit_sentinel", "civ": "phoenicia", "name": "Sentinel of the Sign",
+      "weight": 2, "tags": ["guardian"], "loot_bias": { "archetype": "head.mask", "tier_shift": 1 },
+      "when": { "phase": { "in": ["day", "twilight"] } },
+      "weight_mods": [ { "if": { "beacon_grade": { "gte": 1 } }, "mul": 2 } ],
+      "note": "The sign of Tanit, a triangle under a bar and disc, marks Carthaginian stelae and amulets; grimacing terracotta masks were placed in tombs.",
+      "fiction": "It stands where the ground remembers a shrine and it does not care whose."
+    },
+    {
+      "id": "phoenicia.amphora_carrier", "civ": "phoenicia", "name": "Amphora-Carrier of the Isthmus",
+      "weight": 2.5, "tags": ["edible", "trade"], "loot_bias": { "archetype": "off.vessel", "tier_shift": 0 },
+      "when": {},
+      "note": "Mediterranean wine and oil reached the Toulouse basin overland from Narbonne along the Aude and Garonne; the oppidum of Vieille-Toulouse is full of imported amphorae.",
+      "fiction": "It has carried the same jar since before the road had a name."
+    },
+    {
+      "id": "phoenicia.murex_swarm", "civ": "phoenicia", "name": "Murex Swarm",
+      "weight": 1.5, "tags": ["edible", "dye"], "loot_bias": { "archetype": "body.wrap", "tier_shift": 1 },
+      "when": { "water_band": { "lte": 2 } },
+      "note": "Tyrian purple was made from the mucus of murex sea snails; thousands of shells went into a single garment, and the middens still mark Phoenician dye works.",
+      "fiction": "Ten thousand small mouths, one colour."
+    },
+    {
+      "id": "phoenicia.cocagne_shade", "civ": "phoenicia", "name": "Cocagne Shade",
+      "weight": 1.5, "tags": ["dye"], "loot_bias": { "archetype": "body.wrap", "tier_shift": 1 },
+      "when": { "phase": "day" },
+      "note": "Toulouse grew rich in the 15th and 16th centuries on pastel, woad blue, sold as dried balls called cocagnes; the 'pays de Cocagne' is this country.",
+      "fiction": "A dyer's shadow, blue to the elbows, mistaking one trade for another."
+    },
+
+    {
+      "id": "etruria.charun", "civ": "etruria", "name": "Charun",
+      "weight": 3, "tags": ["psychopomp"], "loot_bias": { "archetype": "main.haft", "tier_shift": 1 },
+      "when": { "is_night": true },
+      "note": "Charun, blue-skinned with a hooked nose and a great hammer, guards the door of the tomb in Etruscan painting; the hammer is his, not a weapon he uses on the living.",
+      "fiction": "The hammer is for the door. It has been trying a new door."
+    },
+    {
+      "id": "etruria.vanth", "civ": "etruria", "name": "Vanth",
+      "weight": 2, "tags": ["psychopomp", "winged"], "loot_bias": { "archetype": "main.focus", "tier_shift": 0 },
+      "when": { "phase": { "in": ["twilight", "night"] } },
+      "note": "Vanth is the winged female daimon of the Etruscan underworld, carrying a torch and a scroll, a guide rather than a threat.",
+      "fiction": "She reads the scroll aloud. Some of the names are still alive."
+    },
+    {
+      "id": "etruria.tuchulcha", "civ": "etruria", "name": "Tuchulcha",
+      "weight": 1, "tags": ["demon"], "loot_bias": { "archetype": "relic", "tier_shift": 2 },
+      "when": { "all": [ { "is_night": true }, { "beacon_grade": { "gte": 2 } } ] },
+      "note": "Tuchulcha, with a vulture's beak, donkey's ears and snakes for hair, appears once, in the Tomb of Orcus at Tarquinia.",
+      "fiction": "Painted once and never again, because once was enough to be remembered."
+    },
+    {
+      "id": "etruria.fresco_walker", "civ": "etruria", "name": "Tomb-Fresco Walker",
+      "weight": 2.5, "tags": ["painted"], "loot_bias": { "archetype": "off.guard", "tier_shift": 0 },
+      "when": {},
+      "note": "The painted tombs of Tarquinia show dancers, musicians and banqueters in flat profile, red and black on pale plaster.",
+      "fiction": "Two-dimensional and aware of it."
+    },
+    {
+      "id": "etruria.banquet_shade", "civ": "etruria", "name": "Banquet Shade",
+      "weight": 2, "tags": ["edible", "feast"], "loot_bias": { "archetype": "off.vessel", "tier_shift": 0 },
+      "when": {},
+      "note": "Etruscan tomb paintings and sarcophagi show couples reclining at the funerary banquet, men and women side by side, which startled Greek visitors.",
+      "fiction": "It offers you a cup. The wine is from a vintage that has not happened yet."
+    },
+    {
+      "id": "etruria.haruspex_echo", "civ": "etruria", "name": "Haruspex Echo",
+      "weight": 1, "tags": ["diviner"], "loot_bias": { "archetype": "relic", "tier_shift": 1 },
+      "when": { "moon_illumination": { "gte": 0.7 } },
+      "note": "Etruscan haruspices read the future in sheep livers; the bronze liver model from Piacenza maps the sky's regions onto the organ.",
+      "fiction": "It has read your liver already. It would like a second opinion."
+    },
+
+    { "id": "minoa.labyrinth_construct", "civ": "minoa", "name": "Labyrinth Construct", "weight": 1, "tags": [], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "A corridor that walks." },
+    { "id": "kemet.shabti_swarm", "civ": "kemet", "name": "Shabti Swarm", "weight": 1, "tags": [], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "Four hundred small servants and no master." },
+    { "id": "sumer.lamassu", "civ": "sumer", "name": "Lamassu Sentinel", "weight": 1, "tags": ["guardian"], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "Five legs, so that it is always both standing and walking." },
+    { "id": "scythia.golden_stag", "civ": "scythia", "name": "Golden Stag", "weight": 1, "tags": [], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "Its antlers are other animals." },
+    { "id": "meluhha.weight_golem", "civ": "meluhha", "name": "Weight-Golem", "weight": 1, "tags": [], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "Exactly one, exactly two, exactly four." },
+    { "id": "shang.taotie", "civ": "shang", "name": "Taotie Devourer", "weight": 1, "tags": [], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "A face that is all mouth and no body." },
+    { "id": "nok.furnace_spirit", "civ": "nok", "name": "Furnace Spirit", "weight": 1, "tags": [], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "Still hot from the first iron." },
+    { "id": "olmec.were_jaguar", "civ": "olmec", "name": "Were-Jaguar", "weight": 1, "tags": [], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "A child's face, a cat's intent." },
+    { "id": "chavin.lanzon_guardian", "civ": "chavin", "name": "Lanzón Guardian", "weight": 1, "tags": ["guardian"], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "It smiles with fangs and points both ways." },
+    { "id": "lapita.reef_shade", "civ": "lapita", "name": "Reef-Shade", "weight": 1, "tags": ["water"], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "Stamped in rows, like the pots." },
+    { "id": "hopewell.geometer", "civ": "hopewell", "name": "Earthwork Geometer", "weight": 1, "tags": [], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "It measures the ground you stand on and finds it slightly wrong." },
+    { "id": "aksum.stele_warden", "civ": "aksum", "name": "Stele-Warden", "weight": 1, "tags": ["guardian"], "when": {}, "note": "Placeholder from PLAN §2's bestiary seed.", "fiction": "Taller than it should be and carved with doors that open inward." }
+  ]
+}

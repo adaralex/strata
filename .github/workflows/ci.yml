@@ -34,4 +34,5 @@ jobs:
         run: |
           go run ./worldbuild/cmd/worldbuild -osm worldbuild/testdata/cugnaux.osm -out /tmp/snap
           go run ./server/cmd/worldq -snapshot /tmp/snap lookup 43.5365 1.3444
+          go run ./server/cmd/worldq -snapshot /tmp/snap spawns 43.5365 1.3444 -t 2026-09-20T22:30:00Z
           go run ./server/cmd/worldq -snapshot /tmp/snap bench

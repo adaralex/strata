@@ -10,6 +10,7 @@ import (
 	"sort"
 
 	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/geo"
 	"github.com/paulmach/orb/planar"
 	h3 "github.com/uber/h3-go/v4"
 )
@@ -294,3 +295,17 @@ func lerp(a, b orb.Point, t float64) orb.Point {
 }
 
 func clamp(v, lo, hi float64) float64 { return math.Max(lo, math.Min(hi, v)) }
+
+// Offset returns the point at distM metres from (lat, lon) along bearingDeg
+// (0 = north, clockwise).
+func Offset(lat, lon, bearingDeg, distM float64) (float64, float64) {
+	p := geo.PointAtBearingAndDistance(orb.Point{lon, lat}, bearingDeg, distM)
+	return p.Lat(), p.Lon()
+}
+
+// ParseCell parses an H3 index string such as "8839601945fffff". The second
+// result is false when the string is not a valid cell.
+func ParseCell(s string) (Cell, bool) {
+	c := h3.CellFromString(s)
+	return c, c.IsValid()
+}

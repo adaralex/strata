@@ -1,0 +1,54 @@
+{
+  "$comment": "Spawn parameters (PLAN.md §4, §5, §10, §11; decision record 0004). Everything numeric about spawning lives here. Tiers: 0 Common, 1 Burnished, 2 Votive, 3 Funerary, 4 Anvil-touched (PLAN §7).",
+  "version": 1,
+  "epoch_seconds": 900,
+  "propagation": { "day": 0.15, "twilight": 0.5, "night": 0.85, "moon_bonus": 0.1 },
+  "count": {
+    "base": 3,
+    "per_log2_density": 0.5,
+    "max": 12,
+    "wild_mul": 1.5,
+    "after_midnight_mul": 0.5,
+    "after_midnight_urban_band_max": 1,
+    "$comment": "n = base + floor(log2(1 + poi_count) * per_log2_density); a village gets 3, a city centre 8. After local midnight in urban band 0..1 the count halves (PLAN §11 night dampening)."
+  },
+  "value": {
+    "reference_density": 32,
+    "max_mul": 4.0,
+    "$comment": "value_mul = clamp(sqrt(reference_density / (1 + poi_count)), 1, max_mul): the village monster is rarer and worth more (PLAN §10)."
+  },
+  "tiers": {
+    "names": ["common", "burnished", "votive", "funerary", "anvil_touched"],
+    "base_distribution": [0.55, 0.28, 0.12, 0.04, 0.01],
+    "beacon_shift_by_grade": [0, 1, 1, 2, 2],
+    "wild_shift": -1,
+    "value_shift_per_mul": 0.5,
+    "$comment": "A shift of +1 moves 60% of each tier's mass one tier up; fractional shifts interpolate. value_shift = (value_mul - 1) * value_shift_per_mul."
+  },
+  "authenticity": {
+    "grounded_min_purity": 0.5,
+    "drift_max_purity": 0.35,
+    "confluence_spread": 0.1,
+    "$comment": "Per spawn: the chance of a Drift hybrid is 0 at purity >= grounded_min, 1 at purity <= drift_max, linear between, so night (lower purity) makes hybrids likely rather than universal (PLAN §5). A hybrid pairs the spawn civilization with the strongest other one. Three weights within confluence_spread of each other is Confluence for every spawn. Accessioned and Sited are decided at collapse from the player's fix (PLAN §7)."
+  },
+  "placement": {
+    "jitter_m": 30,
+    "interaction_range_m": 40,
+    "sense_range_m": 250,
+    "claim_grace_epochs": 1,
+    "$comment": "A spawn sits within jitter_m of the centre of one non-excluded r10 child of its cell. A collapse must come from within interaction_range_m and within the spawn's epoch or the one after."
+  },
+  "speed_gate": {
+    "max_speed_kmh": 15,
+    "min_interval_s": 20,
+    "$comment": "Non-negotiable 3. Two fixes from one device faster than this, at least min_interval_s apart, disable interaction for that device until a slower pair arrives."
+  },
+  "drops": {
+    "edible_chance_when_tagged": 0.5,
+    "loot_bias_chance": 0.5,
+    "codex_chance_by_tier": [0.1, 0.2, 0.35, 0.6, 1.0],
+    "affix_count_by_tier": [0, 1, 2, 3, 4],
+    "affix_keys": ["might", "ward", "resonance", "fortune"],
+    "affix_value_by_tier": [0, 6, 12, 20, 32]
+  }
+}

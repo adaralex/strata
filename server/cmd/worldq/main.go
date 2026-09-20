@@ -2,6 +2,7 @@
 //
 //	worldq -snapshot out/midi-pyrenees lookup 43.5365 1.3444 [-p 0.5]
 //	worldq -snapshot out/midi-pyrenees nearby 43.5365 1.3444 [-radius 3000]
+//	worldq -snapshot out/midi-pyrenees spawns 43.5365 1.3444 [-t 2026-09-20T22:00:00Z] [-rules rules]
 //	worldq -snapshot out/midi-pyrenees bench
 package main
 
@@ -53,6 +54,15 @@ func run() error {
 			return err
 		}
 		return nearby(w, lat, lon, *radius)
+	case "spawns":
+		fs := flag.NewFlagSet("spawns", flag.ContinueOnError)
+		at := fs.String("t", "", "RFC3339 time (default now)")
+		rulesDir := fs.String("rules", "rules", "rules directory")
+		lat, lon, err := latLon(fs, args[1:])
+		if err != nil {
+			return err
+		}
+		return spawns(w, lat, lon, *at, *rulesDir)
 	case "bench":
 		return bench(w, loadTime)
 	default:
