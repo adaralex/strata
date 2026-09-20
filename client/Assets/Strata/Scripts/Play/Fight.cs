@@ -139,6 +139,9 @@ namespace Strata.Play
             if (_misses >= MissesToLose) Finish(false, false);
         }
 
+        /// <summary>The Auto-resolve button, callable by the editor walk emulation.</summary>
+        public void AutoResolve() { if (_active) Finish(true, true); }
+
         private void Finish(bool won, bool auto)
         {
             if (!_active) return;

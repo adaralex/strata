@@ -52,10 +52,37 @@ namespace Strata.Map
             return new Vector3((float)(x / fallbackMetresPerUnit), 0f, (float)(z / fallbackMetresPerUnit));
         }
 
+        private bool _simSet;
+        private double _simLat, _simLon, _simReloadLat, _simReloadLon;
+
+        /// <summary>
+        /// Editor emulation: put the map's simulated location here. With GO Map this drives its
+        /// location manager and asks it to reload tiles every 60 m; without it the value is
+        /// what TryGetMapLocation returns.
+        /// </summary>
+        public void SetSimulatedLocation(double lat, double lon)
+        {
+            _simSet = true;
+            _simLat = lat; _simLon = lon;
+#if STRATA_GOMAP
+            if (goMap != null && goMap.locationManager != null)
+            {
+                var c = new Coordinates(lat, lon, 0);
+                goMap.locationManager.currentLocation = c;
+                if (Geo.DistanceM(_simReloadLat, _simReloadLon, lat, lon) > 60)
+                {
+                    _simReloadLat = lat; _simReloadLon = lon;
+                    goMap.locationManager.onLocationChanged?.Invoke(c);
+                }
+            }
+#endif
+        }
+
         /// <summary>The map's own idea of where the player is, when it has one.</summary>
         public bool TryGetMapLocation(out double lat, out double lon)
         {
             lat = lon = 0;
+            if (_simSet) { lat = _simLat; lon = _simLon; return true; }
 #if STRATA_GOMAP
             if (goMap != null && goMap.locationManager != null)
             {

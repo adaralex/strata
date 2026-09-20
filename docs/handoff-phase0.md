@@ -125,3 +125,14 @@ Needs one GO Map asset patch outside git: `GOShared/Shared Core/GOEnumUtils.cs`
 to the first word, otherwise multi-word kinds are dropped. Proper follow-up: serve service
 points from worldd using `poi_classes.json`, so the game's own classification, exclusions and
 brand caps decide what shows.
+
+**Emulated walk (2026-09-20, 22:10–22:50):** `WalkSimulator` (editor-only) drove the map's
+simulated location along `Resources/Routes/cugnaux-loop.json`, an OSRM foot route from
+16 rue des Glières through the decision-record loop and back (9.76 km, 666 points), at
+3.8 m/s with auto-engage. Result: 127 fights, 21 drops (17 drift hybrids, 4 grounded; 14
+common, 3 burnished, 2 votive, 2 funerary), 10 monsters in the codex, 7 cells, debrief
+saved. Whole loop reads as Hallstatt ground. Bug found and fixed: worldd keeps listing a
+spawn this device has collapsed until the epoch turns, so the marker came back on the next
+refresh and a second tap was refused 409 "already collapsed by this device" (27 times);
+the client now forgets collapsed spawns for the session. Start it from Server > Emulate
+the walk in the editor.

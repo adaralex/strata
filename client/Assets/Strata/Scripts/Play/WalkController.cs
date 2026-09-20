@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using Strata.Config;
@@ -42,6 +43,10 @@ namespace Strata.Play
 
         private LookupOut _lookup;
         private SpawnsOut _spawns;
+        // Spawns this device has already collapsed. worldd keeps listing them until the epoch
+        // turns, so without this the marker comes back on the next refresh and a second tap is
+        // refused as "already collapsed by this device".
+        private readonly HashSet<string> _collapsed = new HashSet<string>();
         private Fix? _fix;
         private double _lastSpawnLat, _lastSpawnLon;
         private float _lastLookupAt = -999, _lastSpawnsAt = -999;
@@ -77,6 +82,10 @@ namespace Strata.Play
             _fixes.fallback = () => map.TryGetMapLocation(out var lat, out var lon) ? (true, lat, lon) : (false, 0.0, 0.0);
             _fixes.OnFix += OnFix;
             _fixes.OnStatus += s => SetStatus(s);
+#if UNITY_EDITOR
+            _sim = gameObject.AddComponent<WalkSimulator>();
+            _sim.Bind(this, map);
+#endif
         }
 
         private void Start()
@@ -99,6 +108,40 @@ namespace Strata.Play
                 if (_spawns != null && DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= _spawns.EpochEnds) StartCoroutine(RefreshSpawns());
             }
         }
+
+#if UNITY_EDITOR
+        private WalkSimulator _sim;
+
+        // ---- editor walk emulation hooks (never in the phone build) ----
+        public bool FightActive => _fight.Active;
+        public bool Modal => _modal;
+        public void AutoResolveFight() => _fight.AutoResolve();
+        public void SimNote(string s) { if (!_modal) SetStatus(s); Debug.Log("[walk emulation] " + s); }
+
+        /// <summary>Tap the nearest spawn within interaction range, if any. Returns whether one was engaged.</summary>
+        public bool EngageNearestInRange()
+        {
+            if (_modal || _fight.Active || _spawns == null || !_fix.HasValue) return false;
+            if (_spawns.SpeedGated || (_lookup != null && _lookup.Excluded)) return false;
+            var f = _fix.Value;
+            Spawn best = null; double bestD = double.MaxValue;
+            foreach (var sp in _spawns.Spawns)
+            {
+                var d = Geo.DistanceM(f.Lat, f.Lon, sp.Lat, sp.Lon);
+                if (d < bestD) { bestD = d; best = sp; }
+            }
+            if (best == null || bestD > settings.interactionRangeM) return false;
+            TryEngage(best);
+            return _fight.Active;
+        }
+
+        /// <summary>Press "Keep walking" on an open item card, or "Back to the map" on a debrief.</summary>
+        public void DismissCard()
+        {
+            foreach (var b in _ui.Root.GetComponentsInChildren<UnityEngine.UI.Button>(true))
+                if (b.name == "Button Keep walking" || b.name == "Button Back to the map") { b.onClick.Invoke(); return; }
+        }
+#endif
 
         private void OnTap(Vector2 screen)
         {
@@ -168,6 +211,7 @@ namespace Strata.Play
             {
                 if (!r.Ok) { SetStatus("spawns: " + r.Error); return; }
                 _spawns = r.Value;
+                _spawns.Spawns.RemoveAll(s => _collapsed.Contains(s.Id));
                 _strip.SetEpochEnds(_spawns.EpochEnds);
                 _markers.Sync(_spawns.Spawns);
                 UpdateBanner();
@@ -215,14 +259,23 @@ namespace Strata.Play
                 {
                     _modal = false;
                     SetStatus($"collapse refused ({r.Status}): {r.Error}");
+                    if (r.Status == 409) Forget(sp); // already ours: never offer it again
                     return;
                 }
-                _markers.Remove(sp.Id);
+                Forget(sp);
                 _log.Received(r.Value.Item);
                 _store.AddItem(r.Value.Item);
                 _card.Show(r.Value, () => { _modal = false; });
                 SetStatus($"{r.Value.Item.Name} is yours");
             });
+        }
+
+        /// <summary>Drop a spawn from the map and the cached list for the rest of the session.</summary>
+        private void Forget(Spawn sp)
+        {
+            _collapsed.Add(sp.Id);
+            _markers.Remove(sp.Id);
+            _spawns?.Spawns.RemoveAll(s => s.Id == sp.Id);
         }
 
         private void BuildBottomBar()
@@ -275,6 +328,14 @@ namespace Strata.Play
                 _modal = false;
                 StartCoroutine(_client.Health(r => SetStatus(r.Ok ? $"connected to {_client.BaseUrl}" : $"unreachable: {r.Error}")));
             });
+#if UNITY_EDITOR
+            _ui.Button_(panel, _sim != null && _sim.Running ? "Stop walk emulation" : "Emulate the walk", UIKit.PanelLight, () =>
+            {
+                Destroy(panel.gameObject);
+                _modal = false;
+                _sim?.Toggle();
+            }, 90);
+#endif
             _ui.Button_(panel, "Cancel", UIKit.PanelLight, () => { Destroy(panel.gameObject); _modal = false; }, 90);
         }
 
