@@ -1,0 +1,19 @@
+{
+  "$comment": "Curated beacon holdings (PLAN.md §6 step 3). Matched against OSM beacons by ref or by case-insensitive name substring. civs is a weight vector over civilization keys and is normalised at build. verify=true means a researcher has not checked the holdings yet; the numbers are a first guess from public collection descriptions.",
+  "beacons": [
+    {
+      "match": { "name_contains": "Saint-Raymond" },
+      "grade": 3,
+      "civs": { "hallstatt": 0.6, "etruria": 0.25, "phoenicia": 0.15 },
+      "note": "Musée Saint-Raymond, Toulouse. Gaulish gold torcs (Fenouillet, Vieille-Toulouse), Roman sculpture from Chiragan. Etruscan and Phoenician shares are a guess for imported material.",
+      "verify": true
+    },
+    {
+      "match": { "name_contains": "Georges-Labit" },
+      "grade": 3,
+      "civs": { "kemet": 0.7, "shang": 0.2, "meluhha": 0.1 },
+      "note": "Musée Georges-Labit, Toulouse. Egyptian antiquities and Asian art. The Asian shares stand in for later Chinese and Indian material and need a researcher's eye.",
+      "verify": true
+    }
+  ]
+}

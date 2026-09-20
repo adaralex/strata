@@ -25,9 +25,9 @@ Do not relitigate these without being asked:
 | Decision | Value |
 | --- | --- |
 | Platform | Android only for now; iOS is a later client, never a second implementation |
-| Client | Kotlin + Jetpack Compose. **2D. No Unity, no AR at launch** |
-| Map | MapLibre Native, self-hosted vector tiles as PMTiles on a CDN |
-| Combat renderer | Spike Rive vs Compose Canvas in week 1, keep the winner |
+| Client | Unity, with the "GO Map - 3D Map for AR Gaming" asset for map and visuals (decision record 0002, supersedes PLAN.md §12). AR at launch is undecided |
+| Map | GO Map inside Unity; the server never sees the map stack |
+| Combat renderer | Unity scene; the Rive vs Compose spike is withdrawn |
 | Server | Go, stateless services, server-authoritative for everything valuable |
 | Storage | PostgreSQL 16 + PostGIS, Redis for hot state, NATS for events |
 | Spatial index | H3. r8 for cell weights, r9/r10 for spawn placement, r5 for the weather cache |
@@ -56,7 +56,7 @@ These are not preferences. Flag it loudly if a task would violate one.
 ## Repo layout (target)
 
 ```
-/android         Kotlin app. Compose UI, MapLibre map, combat view
+/client          Unity project: GO Map world map, combat scene, native passive collector
 /server          Go services: world, combat, player, beacon, season, trust
 /worldbuild      Offline pipeline: OSM extract -> POI classify -> H3 cell weights
 /proto           Protobuf schemas shared by client and server
@@ -65,15 +65,14 @@ These are not preferences. Flag it loudly if a task would violate one.
 /docs            PLAN.md and decision records (docs/decisions/NNNN-*.md)
 ```
 
-Today: `/server/world` (cell record, snapshot, walk index, lookup, the H3 helper in
-`h3x`), `/server/cond` (epoch, solar phase, propagation, digest), `/server/spawn`
-(deterministic spawns, rules and bestiary as data), `/server/loot` (the claim: server
-decides the drop), `/server/cmd/worldd` (HTTP world service) and `/server/cmd/worldq`
-(query CLI), `/worldbuild` (classify, cells, museums), `/rules`, `/data`, `/android`
-(`core`: pure Kotlin, tested; `app`: Compose + MapLibre walk test, needs the SDK to
-build), `/worldbuild/drift` (the planet cost field from Natural Earth terrain). Go module
-at the repo root. See `worldbuild/README.md` to run the France build and serve it,
-`android/README.md` to walk it. All four phase 0 tracks are built; see `docs/decisions`.
+Today (track 1 only): `/server/world` (the r8 cell record, weight derivation, snapshot
+codec, lookup; the H3 helper in `h3x`), `/server/cmd/worldq` (query CLI),
+`/worldbuild/classify` (OSM reader and POI classifier), `/worldbuild/cells` (the cell
+builder), `/worldbuild/cmd/worldbuild` (the pipeline CLI), `/rules` (`civs.json`,
+`poi_classes.json`), `/data` (three civilization layers, curated Toulouse beacons,
+block and allow lists). Go module at the repo root. See `worldbuild/README.md` to run the
+Midi-Pyrénées build. Tracks 2, 3 and 4 are not started. Decisions so far are in
+`docs/decisions`.
 
 ## Phase 0 spike — the only work in scope right now
 
@@ -89,7 +88,7 @@ Five weeks, throwaway, no art. Four independent tracks:
    in. See PLAN.md §4 and §5.
 3. **Deterministic spawns.** `spawns(cell, epoch, condition_digest)` from a hash, no stored
    spawn rows. Acceptance: two devices in the same cell see the same monsters.
-4. **Walk test.** The actual point. Bare Compose app, MapLibre, location, placeholder
+4. **Walk test.** The actual point. Bare Unity scene, GO Map, location, placeholder
    fights, real drops. Acceptance: walk a real 3 km route through two zones and have
    someone who is not on the team tell you whether it felt like anything.
 
@@ -98,7 +97,8 @@ Do not build: accounts, payments, museums, combat depth, art, the event framewor
 ## Conventions
 
 - Go: standard layout, `golangci-lint`, no ORM, `pgx` with hand-written SQL.
-- Kotlin: Compose only, no XML layouts, coroutines and Flow, no RxJava.
+- Unity: C#, one scene per screen, no gameplay rules in the client; the passive collector
+  is a native Android foreground service beside the Unity activity.
 - Everything spatial goes through one H3 helper module. No ad-hoc lat/lon maths.
 - Content is data, never code: civilizations, spawn rules, item archetypes and lore all
   live in versioned files under `/data` and `/rules`, hot-reloadable.
@@ -108,16 +108,17 @@ Do not build: accounts, payments, museums, combat depth, art, the event framewor
   with the server, and the drift solve is compute-bound. No Python in the repo.
 - Decisions that change a plan section or a convention get a record in `docs/decisions`.
 - CI (`.github/workflows/ci.yml`) runs gofmt, build, vet, golangci-lint (`.golangci.yml`),
-  race tests and the lookup benchmark; the Kotlin core tests; the Android debug build.
-  Semgrep (`.github/workflows/semgrep.yml`) runs the public Go, Kotlin and secrets rules
-  plus the repo's own in `.semgrep/`, which encode the conventions above. Keep both green.
+  race tests, the lookup benchmark and a build of the test fixture. Unity builds and
+  Semgrep are not wired up yet. Keep it green.
 
 ## Open questions — ask, do not decide
 
 Listed in full in PLAN.md §21. The ones that affect code:
 
-- ~~Which metro area is the phase 0 city.~~ Decided: Paris, built from the whole
-  `europe/france` extract (decision record 0001). The two walk-test zones are Hallstatt
-  soil and museum beacon halos; museum data refreshes monthly.
+- ~~Which metro area is the phase 0 city.~~ Decided: Cugnaux, built from the whole
+  `europe/france/midi-pyrenees` extract, unclipped (decision record 0003). The first
+  walk-test zone is Hallstatt periphery soil; the second is whatever beacon the extract
+  holds within 3 km of the centre, still to be found with `worldq nearby`.
 - Team size, which sets whether phase 0 runs four tracks in parallel or one at a time.
-- Rive vs Compose Canvas for combat, to be answered by the week-1 spike.
+- Whether AR is in scope at launch now that the client is Unity and GO Map (decision
+  record 0002).

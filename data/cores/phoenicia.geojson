@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "$comment": "Phoenicia (PLAN.md §2): a coastline, not a country. Cores are the Levant strip and the western colonies. Two corridors: the Mediterranean littoral and the Aude to Garonne isthmus (Narbonne, Carcassonne, Toulouse, Bordeaux), the overland trade route by which Mediterranean goods reached the Toulouse basin. Corridor cost_km is how far from a core being on the corridor feels. Coordinates lon,lat; phase 0 coarse.",
+  "features": [
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "core", "name": "Levant coast" },
+      "geometry": { "type": "Polygon", "coordinates": [[[34.4, 36.9], [36.4, 36.9], [35.8, 32.5], [35.2, 31.3], [34.2, 31.5], [34.4, 36.9]]] } },
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "core", "name": "Carthage" },
+      "geometry": { "type": "Polygon", "coordinates": [[[9.5, 37.4], [11.3, 37.2], [11.2, 35.0], [10.0, 34.0], [9.5, 35.5], [9.5, 37.4]]] } },
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "core", "name": "Sardinia" },
+      "geometry": { "type": "Polygon", "coordinates": [[[8.0, 41.2], [9.9, 41.2], [9.9, 38.8], [8.0, 38.8], [8.0, 41.2]]] } },
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "core", "name": "Western Sicily" },
+      "geometry": { "type": "Polygon", "coordinates": [[[12.3, 38.3], [13.5, 38.3], [13.5, 37.4], [12.3, 37.4], [12.3, 38.3]]] } },
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "core", "name": "Malta" },
+      "geometry": { "type": "Polygon", "coordinates": [[[14.1, 36.1], [14.7, 36.1], [14.7, 35.7], [14.1, 35.7], [14.1, 36.1]]] } },
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "core", "name": "Ibiza" },
+      "geometry": { "type": "Polygon", "coordinates": [[[1.1, 39.2], [1.7, 39.2], [1.7, 38.7], [1.1, 38.7], [1.1, 39.2]]] } },
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "core", "name": "Gadir" },
+      "geometry": { "type": "Polygon", "coordinates": [[[-6.6, 36.8], [-5.8, 36.8], [-5.8, 36.2], [-6.6, 36.2], [-6.6, 36.8]]] } },
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "corridor", "cost_km": 150, "name": "Iberian and Gaulish littoral" },
+      "geometry": { "type": "LineString", "coordinates": [[-6.3, 36.5], [-4.4, 36.7], [-0.9, 37.6], [-0.4, 39.5], [2.2, 41.4], [3.0, 43.2], [4.8, 43.4], [5.4, 43.3], [7.3, 43.7]] } },
+    { "type": "Feature", "properties": { "civ": "phoenicia", "kind": "corridor", "cost_km": 250, "name": "Aude to Garonne isthmus" },
+      "geometry": { "type": "LineString", "coordinates": [[3.0, 43.18], [2.35, 43.21], [1.95, 43.32], [1.44, 43.60], [0.62, 44.20], [-0.58, 44.84]] } }
+  ]
+}

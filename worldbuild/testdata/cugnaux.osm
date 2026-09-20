@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="strata-fixture">
+  <bounds minlat="43.520" minlon="1.320" maxlat="43.550" maxlon="1.370"/>
+  <!-- Town centre POIs, around the Hôtel de ville of Cugnaux (43.5365, 1.3444). Invented ids, plausible tags. -->
+  <node id="1" lat="43.5368" lon="1.3450"><tag k="shop" v="bakery"/><tag k="name" v="Boulangerie du Centre"/><tag k="opening_hours" v="Tu-Su 07:00-19:30"/></node>
+  <node id="2" lat="43.5360" lon="1.3440"><tag k="amenity" v="pharmacy"/><tag k="name" v="Pharmacie de la Mairie"/></node>
+  <node id="3" lat="43.5362" lon="1.3455"><tag k="amenity" v="bank"/><tag k="name" v="Crédit Test"/><tag k="brand:wikidata" v="Q0000001"/></node>
+  <node id="4" lat="43.5372" lon="1.3430"><tag k="amenity" v="library"/><tag k="name" v="Médiathèque"/></node>
+  <node id="5" lat="43.5358" lon="1.3448"><tag k="amenity" v="restaurant"/><tag k="name" v="Le Bistrot"/></node>
+  <node id="6" lat="43.5340" lon="1.3500"><tag k="shop" v="hardware"/><tag k="name" v="Bricolage"/></node>
+  <node id="7" lat="43.5400" lon="1.3550"><tag k="tourism" v="hotel"/><tag k="name" v="Hôtel Test"/></node>
+  <node id="8" lat="43.5366" lon="1.3446"><tag k="amenity" v="drinking_water"/></node>
+  <node id="9" lat="43.5364" lon="1.3442"><tag k="historic" v="memorial"/><tag k="name" v="Monument aux morts"/></node>
+  <node id="10" lat="43.5420" lon="1.3600"><tag k="historic" v="archaeological_site"/><tag k="historic:civilization" v="celtic"/><tag k="name" v="Oppidum test"/></node>
+  <node id="11" lat="43.5380" lon="1.3470"><tag k="shop" v="supermarket"/><tag k="name" v="Supermarché dans l'école"/></node>
+  <node id="12" lat="43.5363" lon="1.3438"><tag k="amenity" v="place_of_worship"/><tag k="religion" v="christian"/><tag k="name" v="Église Saint-Test"/></node>
+  <node id="13" lat="43.5370" lon="1.3460"><tag k="shop" v="clothes"/><tag k="name" v="Boutique"/></node>
+  <node id="14" lat="43.5300" lon="1.3400"><tag k="tourism" v="museum"/><tag k="name" v="Musée de la Résistance et de la Déportation (test)"/></node>
+  <node id="15" lat="43.5301" lon="1.3402"><tag k="shop" v="books"/><tag k="name" v="Librairie"/></node>
+  <node id="16" lat="43.5345" lon="1.3490"><tag k="shop" v="bicycle"/><tag k="repair" v="yes"/><tag k="name" v="Vélo réparation"/></node>
+  <!-- School polygon, ~100 m square, containing node 11 -->
+  <node id="200" lat="43.5375" lon="1.3464"/><node id="201" lat="43.5375" lon="1.3476"/><node id="202" lat="43.5385" lon="1.3476"/><node id="203" lat="43.5385" lon="1.3464"/>
+  <!-- Park polygon, ~200 m -->
+  <node id="210" lat="43.5320" lon="1.3410"/><node id="211" lat="43.5320" lon="1.3435"/><node id="212" lat="43.5340" lon="1.3435"/><node id="213" lat="43.5340" lon="1.3410"/>
+  <!-- Museum polygon, ~50 m, with a library inside it -->
+  <node id="220" lat="43.5348" lon="1.3478"/><node id="221" lat="43.5348" lon="1.3484"/><node id="222" lat="43.5352" lon="1.3484"/><node id="223" lat="43.5352" lon="1.3478"/>
+  <!-- Stream, north-south -->
+  <node id="230" lat="43.5250" lon="1.3250"/><node id="231" lat="43.5350" lon="1.3255"/><node id="232" lat="43.5450" lon="1.3260"/>
+  <!-- Motorway segment, south of town -->
+  <node id="240" lat="43.5230" lon="1.3300"/><node id="241" lat="43.5240" lon="1.3650"/>
+  <!-- Lake polygon -->
+  <node id="250" lat="43.5280" lon="1.3340"/><node id="251" lat="43.5280" lon="1.3365"/><node id="252" lat="43.5300" lon="1.3365"/><node id="253" lat="43.5300" lon="1.3340"/>
+  <!-- Forest multipolygon from two half rings -->
+  <node id="260" lat="43.5450" lon="1.3300"/><node id="261" lat="43.5450" lon="1.3350"/><node id="262" lat="43.5480" lon="1.3350"/><node id="263" lat="43.5480" lon="1.3300"/>
+  <!-- A house -->
+  <node id="270" lat="43.5390" lon="1.3420"/><node id="271" lat="43.5390" lon="1.3422"/><node id="272" lat="43.5392" lon="1.3422"/><node id="273" lat="43.5392" lon="1.3420"/>
+  <!-- A roundabout: closed highway way, must stay a line and is not interesting -->
+  <node id="280" lat="43.5310" lon="1.3500"/><node id="281" lat="43.5310" lon="1.3504"/><node id="282" lat="43.5313" lon="1.3504"/>
+  <way id="100"><nd ref="200"/><nd ref="201"/><nd ref="202"/><nd ref="203"/><nd ref="200"/><tag k="amenity" v="school"/><tag k="name" v="École test"/></way>
+  <way id="101"><nd ref="210"/><nd ref="211"/><nd ref="212"/><nd ref="213"/><nd ref="210"/><tag k="leisure" v="park"/><tag k="name" v="Parc test"/></way>
+  <way id="102"><nd ref="220"/><nd ref="221"/><nd ref="222"/><nd ref="223"/><nd ref="220"/><tag k="tourism" v="museum"/><tag k="amenity" v="library"/><tag k="name" v="Musée test de Cugnaux"/></way>
+  <way id="103"><nd ref="230"/><nd ref="231"/><nd ref="232"/><tag k="waterway" v="stream"/><tag k="name" v="Le Touch (test)"/></way>
+  <way id="104"><nd ref="240"/><nd ref="241"/><tag k="highway" v="motorway"/><tag k="ref" v="A64 (test)"/></way>
+  <way id="105"><nd ref="250"/><nd ref="251"/><nd ref="252"/><nd ref="253"/><nd ref="250"/><tag k="natural" v="water"/><tag k="name" v="Lac test"/></way>
+  <way id="106"><nd ref="260"/><nd ref="261"/><nd ref="262"/></way>
+  <way id="107"><nd ref="262"/><nd ref="263"/><nd ref="260"/></way>
+  <way id="109"><nd ref="270"/><nd ref="271"/><nd ref="272"/><nd ref="273"/><nd ref="270"/><tag k="building" v="house"/></way>
+  <way id="110"><nd ref="280"/><nd ref="281"/><nd ref="282"/><nd ref="280"/><tag k="highway" v="residential"/><tag k="junction" v="roundabout"/></way>
+  <relation id="300"><member type="way" ref="106" role="outer"/><member type="way" ref="107" role="outer"/><tag k="type" v="multipolygon"/><tag k="landuse" v="forest"/><tag k="name" v="Bois test"/></relation>
+</osm>

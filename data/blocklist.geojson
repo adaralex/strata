@@ -1,0 +1,5 @@
+{
+  "type": "FeatureCollection",
+  "$comment": "Hand-drawn sites of conscience where no gameplay happens (PLAN.md §11). Polygons are baked into the r10 exclusion set on every build. Empty for Cugnaux until a human reviews the region.",
+  "features": []
+}

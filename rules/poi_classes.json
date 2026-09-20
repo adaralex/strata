@@ -1,0 +1,163 @@
+{
+  "$comment": "POI classification schema (PLAN.md §9, §11; decision record 0003). A matcher matches when every listed key is present with one of the listed values ('*' = any value). Classes are ranked by priority; a feature takes the highest-priority class it matches plus any 'stackable' class. Exclusions are applied before classes and always win. Everything here is data: change it and rebuild, no code changes.",
+  "version": 1,
+  "classes": [
+    {
+      "id": "beacon",
+      "priority": 100,
+      "match": [
+        { "tags": { "tourism": ["museum", "gallery"] }, "grade": 3 },
+        { "tags": { "historic": ["archaeological_site", "ruins"] }, "grade": 2 },
+        { "tags": { "historic": ["monument", "castle", "fort", "city_gate"] }, "grade": 1 },
+        { "tags": { "historic": ["memorial"] }, "grade": 1, "whitelist_only": true }
+      ],
+      "geometry": { "prefer": "polygon", "buffer_m": 60 },
+      "interaction": { "kind": "accession", "range_m": 60, "cooldown_s": 79200 },
+      "spawn": { "tier_shift_by_grade": [0, 1, 1, 2, 2], "rarity_mul_by_grade": [1, 1.5, 1.8, 2.2, 2.5] },
+      "civ_source": ["curated", "historic:civilization", "cell_soil"]
+    },
+    {
+      "id": "scriptorium",
+      "priority": 90,
+      "stackable": true,
+      "match": [
+        { "tags": { "amenity": ["library", "archive"] }, "potency": 1.0 },
+        { "tags": { "amenity": ["university", "college"] }, "potency": 0.8 },
+        { "tags": { "shop": ["books"] }, "potency": 0.6 },
+        { "tags": { "tourism": ["information"], "information": ["office"] }, "potency": 0.4 }
+      ],
+      "geometry": { "prefer": "point" },
+      "interaction": { "kind": "translate", "range_m": 50, "cooldown_s": 0 }
+    },
+    {
+      "id": "apothecary",
+      "priority": 80,
+      "match": [
+        { "tags": { "amenity": ["pharmacy"] }, "potency": 1.0 },
+        { "tags": { "healthcare": ["pharmacy"] }, "potency": 1.0 },
+        { "tags": { "shop": ["chemist", "herbalist", "medical_supply"] }, "potency": 0.6 }
+      ],
+      "geometry": { "prefer": "point" },
+      "interaction": { "kind": "potion", "range_m": 30, "cooldown_s": 7200 }
+    },
+    {
+      "id": "vault",
+      "priority": 70,
+      "match": [
+        { "tags": { "amenity": ["bank", "bureau_de_change", "post_office"] }, "potency": 1.0 },
+        { "tags": { "amenity": ["atm"] }, "potency": 0.5 }
+      ],
+      "geometry": { "prefer": "point" },
+      "interaction": { "kind": "stash", "range_m": 30, "cooldown_s": 0 }
+    },
+    {
+      "id": "forge",
+      "priority": 60,
+      "match": [
+        { "tags": { "craft": ["blacksmith", "metal_construction"] }, "potency": 1.0 },
+        { "tags": { "shop": ["hardware", "doityourself", "locksmith", "trade"] }, "potency": 0.8 },
+        { "tags": { "craft": ["jeweller", "watchmaker", "shoemaker", "carpenter", "joiner", "key_cutter", "electronics", "upholsterer"] }, "potency": 0.8 },
+        { "tags": { "shop": ["bicycle", "car_repair", "motorcycle_repair"] }, "potency": 0.5 },
+        { "tags": { "shop": ["*"], "repair": ["*"] }, "potency": 0.6 }
+      ],
+      "geometry": { "prefer": "point" },
+      "interaction": { "kind": "reforge", "range_m": 30, "cooldown_s": 0 }
+    },
+    {
+      "id": "wardrobe",
+      "priority": 55,
+      "match": [
+        { "tags": { "shop": ["clothes", "boutique", "shoes", "jewelry", "tailor", "department_store", "second_hand", "bag"] }, "potency": 1.0 }
+      ],
+      "geometry": { "prefer": "point" },
+      "interaction": { "kind": "loadout", "range_m": 30, "cooldown_s": 0 }
+    },
+    {
+      "id": "inn",
+      "priority": 50,
+      "match": [
+        { "tags": { "tourism": ["hotel", "hostel", "guest_house", "motel", "chalet", "alpine_hut", "camp_site"] }, "potency": 1.0 }
+      ],
+      "geometry": { "prefer": "point" },
+      "interaction": { "kind": "dwell_regen", "range_m": 40, "cooldown_s": 0, "regen_mul": 3.0, "daily_cap_s": 3600 }
+    },
+    {
+      "id": "hearth",
+      "priority": 40,
+      "match": [
+        { "tags": { "shop": ["bakery"] }, "potency": 1.0 },
+        { "tags": { "shop": ["pastry"] }, "potency": 0.9 },
+        { "tags": { "shop": ["butcher", "greengrocer", "cheese", "deli"] }, "potency": 0.7 },
+        { "tags": { "amenity": ["restaurant", "cafe", "fast_food", "bar", "pub", "ice_cream", "food_court"] }, "potency": 0.6 },
+        { "tags": { "shop": ["convenience"] }, "potency": 0.5 },
+        { "tags": { "shop": ["supermarket"] }, "potency": 0.4 }
+      ],
+      "geometry": { "prefer": "point" },
+      "interaction": { "kind": "heal", "range_m": 35, "cooldown_s": 1800, "daily_cap_s": 21600, "drops": ["edible"] },
+      "spawn": { "tag_bias": { "edible": 1.5 } }
+    },
+    {
+      "id": "spring",
+      "priority": 30,
+      "match": [
+        { "tags": { "amenity": ["drinking_water", "fountain"] }, "potency": 1.0 },
+        { "tags": { "natural": ["spring"] }, "potency": 1.0 },
+        { "tags": { "man_made": ["water_well"] }, "potency": 0.8 }
+      ],
+      "geometry": { "prefer": "point" },
+      "interaction": { "kind": "resonance", "range_m": 25, "cooldown_s": 2700 }
+    },
+    {
+      "id": "caravan",
+      "priority": 20,
+      "match": [
+        { "tags": { "railway": ["station", "halt"] }, "potency": 1.0 },
+        { "tags": { "public_transport": ["station"] }, "potency": 0.8 },
+        { "tags": { "aeroway": ["terminal"] }, "potency": 1.0 },
+        { "tags": { "amenity": ["ferry_terminal", "bus_station"] }, "potency": 0.8 }
+      ],
+      "geometry": { "prefer": "polygon" },
+      "interaction": { "kind": "journey", "range_m": 0, "cooldown_s": 0 }
+    },
+    {
+      "id": "wild",
+      "priority": 10,
+      "match": [
+        { "tags": { "leisure": ["park", "nature_reserve", "garden"] } },
+        { "tags": { "natural": ["wood", "beach", "heath"] } },
+        { "tags": { "landuse": ["forest"] } }
+      ],
+      "geometry": { "prefer": "polygon" },
+      "spawn": { "zone": true, "density_mul": 1.5, "tier_shift": -1 }
+    }
+  ],
+  "exclusions": [
+    { "id": "school", "tags": { "amenity": ["school", "kindergarten", "childcare"] }, "buffer_m": 30 },
+    { "id": "health", "tags": { "amenity": ["hospital", "clinic"] }, "buffer_m": 30 },
+    { "id": "emergency", "tags": { "amenity": ["police", "fire_station"] }, "buffer_m": 30 },
+    { "id": "prison", "tags": { "amenity": ["prison"] }, "buffer_m": 50 },
+    { "id": "worship", "tags": { "amenity": ["place_of_worship"] }, "buffer_m": 0, "opt_in": "worship_optin.json" },
+    { "id": "military", "tags": { "landuse": ["military"] }, "buffer_m": 50 },
+    { "id": "military_site", "tags": { "military": ["*"] }, "buffer_m": 50 },
+    { "id": "cemetery", "tags": { "landuse": ["cemetery"] }, "buffer_m": 20 },
+    { "id": "graveyard", "tags": { "amenity": ["grave_yard"] }, "buffer_m": 20 },
+    { "id": "memorial", "tags": { "historic": ["memorial"] }, "buffer_m": 20, "whitelist": "memorial_whitelist.json" },
+    { "id": "level_crossing", "tags": { "railway": ["level_crossing"] }, "buffer_m": 30 },
+    { "id": "motorway", "tags": { "highway": ["motorway", "motorway_link", "trunk", "trunk_link"] }, "buffer_m": 25 },
+    { "id": "rail", "tags": { "railway": ["rail"] }, "buffer_m": 15 },
+    { "id": "airside", "tags": { "aeroway": ["runway", "taxiway", "apron"] }, "buffer_m": 50 },
+    {
+      "id": "home",
+      "tags": { "building": ["house", "apartments", "residential", "detached", "semidetached_house", "terrace"] },
+      "buffer_m": 0,
+      "placement_only": true,
+      "$comment": "Private homes are excluded at spawn placement against the building polygon (track 3), not baked into the r10 set: at 66 m cells that would blank every residential street. Decision record 0003."
+    }
+  ],
+  "terrain": [
+    { "id": "water", "tags": { "natural": ["water"] } },
+    { "id": "water", "tags": { "landuse": ["reservoir", "basin"] } },
+    { "id": "water", "tags": { "waterway": ["river", "stream", "canal", "riverbank"] } },
+    { "id": "coast", "tags": { "natural": ["coastline"] } }
+  ]
+}

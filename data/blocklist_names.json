@@ -1,0 +1,4 @@
+{
+  "$comment": "Case-insensitive substrings. Any beacon (museum, gallery, historic site) whose name contains one is suppressed until a human reviews it (PLAN.md §6: never place a beacon on a memorial museum or a site of atrocity). Toulouse has a Musée départemental de la Résistance et de la Déportation; it must never be a beacon.",
+  "names": ["résistance", "resistance", "déportation", "deportation", "shoah", "holocaust", "mémorial", "memorial", "génocide", "genocide", "martyr"]
+}

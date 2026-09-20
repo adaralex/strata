@@ -1,0 +1,20 @@
+{
+  "$comment": "OSM historic:civilization=* values mapped to the fifteen. Values not listed (roman, gallo-roman, medieval) resolve to no civilization: the beacon inherits its cell's soil vector and only shifts tier.",
+  "historic:civilization": {
+    "celtic": "hallstatt", "gaulish": "hallstatt", "gallic": "hallstatt", "hallstatt": "hallstatt", "la_tene": "hallstatt",
+    "etruscan": "etruria",
+    "phoenician": "phoenicia", "punic": "phoenicia", "carthaginian": "phoenicia",
+    "ancient_egyptian": "kemet", "egyptian": "kemet",
+    "minoan": "minoa",
+    "sumerian": "sumer",
+    "scythian": "scythia",
+    "harappan": "meluhha", "indus_valley": "meluhha",
+    "shang": "shang",
+    "nok": "nok",
+    "olmec": "olmec",
+    "chavin": "chavin",
+    "lapita": "lapita",
+    "hopewell": "hopewell",
+    "aksumite": "aksum", "axumite": "aksum"
+  }
+}

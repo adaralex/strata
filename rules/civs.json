@@ -1,0 +1,21 @@
+{
+  "$comment": "The fifteen (PLAN.md §2). id is the byte stored in the cell record. lambda_km is the base decay constant of PLAN §4/§5 in km-equivalent of flat land; k is the propagation stretch of §5. All numbers are phase 0 tuning guesses. maritime civs get a longer lambda because their reach was by sea.",
+  "cost_unit_km": 1.0,
+  "civs": [
+    { "id": 0,  "key": "etruria",   "name": "Etruria",   "lambda_km": 400,  "k": 1.5, "maritime": false },
+    { "id": 1,  "key": "minoa",     "name": "Minoa",     "lambda_km": 500,  "k": 1.5, "maritime": true },
+    { "id": 2,  "key": "kemet",     "name": "Kemet",     "lambda_km": 450,  "k": 1.5, "maritime": false },
+    { "id": 3,  "key": "sumer",     "name": "Sumer",     "lambda_km": 400,  "k": 1.5, "maritime": false },
+    { "id": 4,  "key": "phoenicia", "name": "Phoenicia", "lambda_km": 600,  "k": 1.5, "maritime": true },
+    { "id": 5,  "key": "scythia",   "name": "Scythia",   "lambda_km": 700,  "k": 1.5, "maritime": false },
+    { "id": 6,  "key": "hallstatt", "name": "Hallstatt", "lambda_km": 400,  "k": 1.5, "maritime": false },
+    { "id": 7,  "key": "meluhha",   "name": "Meluhha",   "lambda_km": 450,  "k": 1.5, "maritime": true },
+    { "id": 8,  "key": "shang",     "name": "Shang",     "lambda_km": 450,  "k": 1.5, "maritime": false },
+    { "id": 9,  "key": "nok",       "name": "Nok",       "lambda_km": 500,  "k": 1.5, "maritime": false },
+    { "id": 10, "key": "olmec",     "name": "Olmec",     "lambda_km": 400,  "k": 1.5, "maritime": false },
+    { "id": 11, "key": "chavin",    "name": "Chavín",    "lambda_km": 400,  "k": 1.5, "maritime": false },
+    { "id": 12, "key": "lapita",    "name": "Lapita",    "lambda_km": 1500, "k": 1.5, "maritime": true },
+    { "id": 13, "key": "hopewell",  "name": "Hopewell",  "lambda_km": 600,  "k": 1.5, "maritime": false },
+    { "id": 14, "key": "aksum",     "name": "Aksum",     "lambda_km": 600,  "k": 1.5, "maritime": true }
+  ]
+}

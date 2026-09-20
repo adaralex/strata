@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || (gofmt -d . && exit 1)
+      - name: build
+        run: go build ./...
+      - name: vet
+        run: go vet ./...
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.1
+      - name: test
+        run: go test -race ./...
+      - name: lookup benchmark
+        run: go test -run xxx -bench Lookup -benchtime 20000x ./server/world/
+      - name: fixture build
+        run: |
+          go run ./worldbuild/cmd/worldbuild -osm worldbuild/testdata/cugnaux.osm -out /tmp/snap
+          go run ./server/cmd/worldq -snapshot /tmp/snap lookup 43.5365 1.3444
+          go run ./server/cmd/worldq -snapshot /tmp/snap bench
