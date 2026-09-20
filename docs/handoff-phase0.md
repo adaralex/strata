@@ -79,3 +79,39 @@ framework (CLAUDE.md). Do not let the client decide a range, a drop, an exclusio
 speed gate; it displays what `worldd` returns. Do not commit the Unity project folder or
 the GO Map asset; `client/Assets/Strata` and `client/Packages/manifest.json` are the
 repo's part.
+
+## Local Unity session · 2026-09-20 evening
+
+Steps 2 and 3 above are done; the editor checklist passed in order on `worldd`
+`midi-pyrenees-latest-20260920` (format 4). Not committed here: the Unity project itself.
+
+**Verified in the editor** (simulated location beside a spawn): ground strip Hallstatt /
+Phoenicia / Etruria / Scythia; markers within 5 m of a walkable way (9 of 10 sampled against
+OSRM's foot network, one outlier at 53 m); status line `nearest: …, N m  TAP IT`; tap within
+40 m opens the fight; Auto-resolve posts the collapse; the item card shows the fact panel in
+Spectral above the Anvil's line in the sans (Staff of the Sign, grounded, Phoenicia); End walk
+saves `strata-walk-*.json` with the log and the four answers.
+
+**Unity project state** (outside git): built-in render pipeline (the URP template's quality
+level made every Standard material magenta); Active Input Handling = Input Manager, because
+Android refuses "Both" at build time and GO Map reads legacy `Input`; GO Map's Marauder's
+Map parchment materials as the theme; editor start point 16 rue des Glières (43.5441433,
+1.3445945); `Strata > Build Walk APK` menu (`client/Assets/Strata/Editor/BuildWalk.cs`)
+writes `Builds/strata-walk.apk`. Unity 6000.6 needed three source fixes, mirrored into
+`client/` uncommitted: `convertCoordinateToVector()` in MapAdapter, `textWrappingMode` in
+UIKit, and GO Map's own NavMeshLinkEditor (`GetInstanceID` → `EntityId`, asset only).
+
+**Client changes since c860a98**, uncommitted in `client/`:
+- `TapCatcher` rewritten: no raycast-target Image. That image made every touch "over UI"
+  for GO Map's orbit, so the map could not be rotated on the phone. It now reads the pointer
+  itself and fires on a short still press not started over a HUD panel.
+- `SpawnMarkers` redrawn for the parchment: ink ring, unlit civ-coloured pillar, sphere
+  hitbox, RaycastAll.
+- `WalkController` line 112 was missing the `$"` on the nearest-hint string; fixed.
+
+**Seen, not fixed:** the item card's header draws under the ground strip at the top of the
+screen (cosmetic); GO Map logs "create a Unity Layer named GOTerrain" per tile (harmless,
+elevation is off); the Unity editor freezes Play mode while unfocused, so drive the editor
+with the Unity window in front.
+
+**Next:** step 4, the shakedown walk on the phone with the 20:29 APK, then step 5.
