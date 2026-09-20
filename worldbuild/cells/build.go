@@ -96,7 +96,14 @@ func Build(in Inputs) (*world.Snapshot, Stats, error) {
 	for zi := range zones {
 		z := &zones[zi]
 		k := int(math.Round(z.BufferM / 100))
-		for _, c := range featureCells(z.F, h3x.ResPlace, 30) {
+		// A zero-buffer zone (a place of worship) excludes only the cells
+		// whose centre is inside it: at 66 m cells, overlap would swallow
+		// the square in front of every church.
+		cells := featureCells(z.F, h3x.ResPlace, 30)
+		if z.BufferM == 0 {
+			cells = featureCellsCentre(z.F, h3x.ResPlace, 30)
+		}
+		for _, c := range cells {
 			excluded := []h3x.Cell{c}
 			if k > 0 {
 				if d, err := h3x.Disk(c, k); err == nil {
@@ -122,6 +129,21 @@ func Build(in Inputs) (*world.Snapshot, Stats, error) {
 		snap.Excl = append(snap.Excl, c)
 	}
 	sort.Slice(snap.Excl, func(i, j int) bool { return snap.Excl[i] < snap.Excl[j] })
+	zoneID := map[string]uint8{}
+	snap.ExclZone = make([]uint8, len(snap.Excl))
+	for i, c := range snap.Excl {
+		name := excl[c]
+		id, ok := zoneID[name]
+		if !ok {
+			if len(snap.ExclZoneNames) >= 255 {
+				return nil, st, fmt.Errorf("more than 255 exclusion zone ids")
+			}
+			id = uint8(len(snap.ExclZoneNames))
+			zoneID[name] = id
+			snap.ExclZoneNames = append(snap.ExclZoneNames, name)
+		}
+		snap.ExclZone[i] = id
+	}
 	st.ExclCells = len(snap.Excl)
 	for _, r10 := range snap.Excl {
 		parent, err := h3x.Parent(h3x.Cell(r10), h3x.ResWeight)
@@ -515,4 +537,36 @@ func insideZone(p orb.Point, zones []zone, index map[uint64][]int) (string, bool
 		}
 	}
 	return "", false
+}
+
+// featureCellsCentre is featureCells with centre containment for polygons:
+// only cells whose centre lies inside. A polygon too small to hold a centre
+// still yields the cell under its centroid.
+func featureCellsCentre(f *classify.Feature, res int, stepM float64) []h3x.Cell {
+	if f.Polygon == nil && len(f.Multi) == 0 {
+		return featureCells(f, res, stepM)
+	}
+	seen := map[h3x.Cell]struct{}{}
+	var out []h3x.Cell
+	add := func(cs []h3x.Cell) {
+		for _, c := range cs {
+			if _, ok := seen[c]; !ok {
+				seen[c] = struct{}{}
+				out = append(out, c)
+			}
+		}
+	}
+	polys := f.Multi
+	if len(polys) == 0 {
+		polys = orb.MultiPolygon{f.Polygon}
+	}
+	for _, poly := range polys {
+		if cs, err := h3x.PolyfillCenter(poly, res); err == nil {
+			add(cs)
+		}
+	}
+	if c, err := h3x.FromPoint(f.Point, res); err == nil {
+		add([]h3x.Cell{c})
+	}
+	return out
 }

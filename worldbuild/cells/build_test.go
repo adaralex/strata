@@ -117,10 +117,21 @@ func TestBuildFixture(t *testing.T) {
 		t.Fatalf("centre should be dense: density %d urban %d", res.Record.POIDensity, res.Record.UrbanBand())
 	}
 	// The memorial and the church are exclusion zones: the r10 cell under
-	// the church is excluded, and the record counts children.
+	// the church is excluded and named, and the record counts children.
 	church, _ := w.Lookup(43.5363, 1.3438, 0)
-	if !church.Excluded || church.Record.ExclChildren == 0 {
-		t.Fatalf("church must be excluded: %+v", church.Record)
+	if !church.Excluded || church.ExcludedBy != "worship" || church.Record.ExclChildren == 0 {
+		t.Fatalf("church must be excluded by worship: %+v %q", church.Record, church.ExcludedBy)
+	}
+	// Zero-buffer zones use centre containment, so the church claims one
+	// r10 cell, not every cell its footprint overlaps.
+	worship := 0
+	for _, z := range w.Snap.ExclZone {
+		if w.Snap.ExclZoneNames[z] == "worship" {
+			worship++
+		}
+	}
+	if worship != 1 {
+		t.Fatalf("church should exclude exactly one r10 cell, got %d", worship)
 	}
 	// The supermarket inside the school is suppressed by the zone.
 	var super *world.POI

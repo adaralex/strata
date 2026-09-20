@@ -13,7 +13,8 @@
   <node id="9" lat="43.5364" lon="1.3442"><tag k="historic" v="memorial"/><tag k="name" v="Monument aux morts"/></node>
   <node id="10" lat="43.5420" lon="1.3600"><tag k="historic" v="archaeological_site"/><tag k="historic:civilization" v="celtic"/><tag k="name" v="Oppidum test"/></node>
   <node id="11" lat="43.5380" lon="1.3470"><tag k="shop" v="supermarket"/><tag k="name" v="Supermarché dans l'école"/></node>
-  <node id="12" lat="43.5363" lon="1.3438"><tag k="amenity" v="place_of_worship"/><tag k="religion" v="christian"/><tag k="name" v="Église Saint-Test"/></node>
+  <node id="17" lat="43.5335" lon="1.3520"><tag k="shop" v="car_repair"/><tag k="name" v="Garage test"/></node>
+  <node id="18" lat="43.5369" lon="1.3452"><tag k="shop" v="bakery"/><tag k="access" v="private"/><tag k="name" v="Cantine privée"/></node>
   <node id="13" lat="43.5370" lon="1.3460"><tag k="shop" v="clothes"/><tag k="name" v="Boutique"/></node>
   <node id="14" lat="43.5300" lon="1.3400"><tag k="tourism" v="museum"/><tag k="name" v="Musée de la Résistance et de la Déportation (test)"/></node>
   <node id="15" lat="43.5301" lon="1.3402"><tag k="shop" v="books"/><tag k="name" v="Librairie"/></node>
@@ -32,6 +33,10 @@
   <node id="250" lat="43.5280" lon="1.3340"/><node id="251" lat="43.5280" lon="1.3365"/><node id="252" lat="43.5300" lon="1.3365"/><node id="253" lat="43.5300" lon="1.3340"/>
   <!-- Forest multipolygon from two half rings -->
   <node id="260" lat="43.5450" lon="1.3300"/><node id="261" lat="43.5450" lon="1.3350"/><node id="262" lat="43.5480" lon="1.3350"/><node id="263" lat="43.5480" lon="1.3300"/>
+  <!-- Church polygon, ~40 m, on the square next to the bakery and pharmacy -->
+  <node id="290" lat="43.5361" lon="1.3436"/><node id="291" lat="43.5361" lon="1.3441"/><node id="292" lat="43.5365" lon="1.3441"/><node id="293" lat="43.5365" lon="1.3436"/>
+  <!-- Private garden polygon -->
+  <node id="300" lat="43.5395" lon="1.3430"/><node id="301" lat="43.5395" lon="1.3434"/><node id="302" lat="43.5398" lon="1.3434"/><node id="303" lat="43.5398" lon="1.3430"/>
   <!-- A house -->
   <node id="270" lat="43.5390" lon="1.3420"/><node id="271" lat="43.5390" lon="1.3422"/><node id="272" lat="43.5392" lon="1.3422"/><node id="273" lat="43.5392" lon="1.3420"/>
   <!-- A roundabout: closed highway way, must stay a line and is not interesting -->
@@ -45,6 +50,8 @@
   <way id="106"><nd ref="260"/><nd ref="261"/><nd ref="262"/></way>
   <way id="107"><nd ref="262"/><nd ref="263"/><nd ref="260"/></way>
   <way id="109"><nd ref="270"/><nd ref="271"/><nd ref="272"/><nd ref="273"/><nd ref="270"/><tag k="building" v="house"/></way>
+  <way id="111"><nd ref="290"/><nd ref="291"/><nd ref="292"/><nd ref="293"/><nd ref="290"/><tag k="amenity" v="place_of_worship"/><tag k="religion" v="christian"/><tag k="name" v="Église Saint-Test"/></way>
+  <way id="112"><nd ref="300"/><nd ref="301"/><nd ref="302"/><nd ref="303"/><nd ref="300"/><tag k="leisure" v="garden"/><tag k="access" v="private"/></way>
   <way id="110"><nd ref="280"/><nd ref="281"/><nd ref="282"/><nd ref="280"/><tag k="highway" v="residential"/><tag k="junction" v="roundabout"/></way>
   <relation id="300"><member type="way" ref="106" role="outer"/><member type="way" ref="107" role="outer"/><tag k="type" v="multipolygon"/><tag k="landuse" v="forest"/><tag k="name" v="Bois test"/></relation>
 </osm>

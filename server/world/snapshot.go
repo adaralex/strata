@@ -24,7 +24,7 @@ const (
 	FileCivs    = "civs.json"
 
 	snapshotMagic   = "STR8"
-	snapshotVersion = 1
+	snapshotVersion = 2
 )
 
 // Snapshot is one immutable world build (PLAN.md §14 step 4/5).
@@ -38,8 +38,11 @@ type Snapshot struct {
 	Records []Record
 	// BeaconAdj holds beacon ids; a record's BeaconStart/BeaconN slice it.
 	BeaconAdj []uint32
-	// Excl is the sorted set of hard-excluded r10 cells.
-	Excl []uint64
+	// Excl is the sorted set of hard-excluded r10 cells. ExclZone[i] indexes
+	// ExclZoneNames with the exclusion that claimed Excl[i] first.
+	Excl          []uint64
+	ExclZone      []uint8
+	ExclZoneNames []string
 
 	Beacons []Beacon
 	POIs    []POI
@@ -167,6 +170,17 @@ func (s *Snapshot) encodeCells(w io.Writer) error {
 	if err := put(uint32(len(s.Excl))); err != nil {
 		return err
 	}
+	if len(s.ExclZoneNames) > 255 {
+		return fmt.Errorf("snapshot: at most 255 exclusion zone names")
+	}
+	if err := put(uint8(len(s.ExclZoneNames))); err != nil {
+		return err
+	}
+	for _, n := range s.ExclZoneNames {
+		if err := putString(w, n); err != nil {
+			return err
+		}
+	}
 	if err := put(s.Keys); err != nil {
 		return err
 	}
@@ -180,7 +194,13 @@ func (s *Snapshot) encodeCells(w io.Writer) error {
 	if err := put(s.BeaconAdj); err != nil {
 		return err
 	}
-	return put(s.Excl)
+	if err := put(s.Excl); err != nil {
+		return err
+	}
+	if len(s.ExclZone) != len(s.Excl) {
+		return fmt.Errorf("snapshot: %d excluded cells but %d zone ids", len(s.Excl), len(s.ExclZone))
+	}
+	return put(s.ExclZone)
 }
 
 // Read loads a snapshot directory.
@@ -248,6 +268,17 @@ func decodeCells(r io.Reader) (*Snapshot, error) {
 	if err := get(&nExcl); err != nil {
 		return nil, err
 	}
+	var nZones uint8
+	if err := get(&nZones); err != nil {
+		return nil, err
+	}
+	for i := 0; i < int(nZones); i++ {
+		n, err := getString(r)
+		if err != nil {
+			return nil, err
+		}
+		s.ExclZoneNames = append(s.ExclZoneNames, n)
+	}
 	s.Keys = make([]uint64, nCells)
 	if err := get(s.Keys); err != nil {
 		return nil, err
@@ -270,6 +301,10 @@ func decodeCells(r io.Reader) (*Snapshot, error) {
 	if err := get(s.Excl); err != nil {
 		return nil, err
 	}
+	s.ExclZone = make([]uint8, nExcl)
+	if err := get(s.ExclZone); err != nil {
+		return nil, err
+	}
 	return s, nil
 }
 
@@ -284,8 +319,20 @@ func (s *Snapshot) Find(key uint64) int {
 
 // IsExcluded reports whether an r10 cell is in the hard-exclusion set.
 func (s *Snapshot) IsExcluded(r10 uint64) bool {
+	_, ok := s.ExcludedBy(r10)
+	return ok
+}
+
+// ExcludedBy returns the exclusion zone id that claimed an r10 cell.
+func (s *Snapshot) ExcludedBy(r10 uint64) (string, bool) {
 	i := sort.Search(len(s.Excl), func(i int) bool { return s.Excl[i] >= r10 })
-	return i < len(s.Excl) && s.Excl[i] == r10
+	if i >= len(s.Excl) || s.Excl[i] != r10 {
+		return "", false
+	}
+	if i < len(s.ExclZone) && int(s.ExclZone[i]) < len(s.ExclZoneNames) {
+		return s.ExclZoneNames[s.ExclZone[i]], true
+	}
+	return "?", true
 }
 
 // ClassBit returns the ServiceMask bit for a class name, or 0 if unknown.

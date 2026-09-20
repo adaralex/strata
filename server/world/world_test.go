@@ -131,6 +131,8 @@ func buildTestSnapshot(t *testing.T, civs *Civs) *Snapshot {
 	s.Records[i].BeaconStart, s.Records[i].BeaconN, s.Records[i].BeaconGrade = 0, 1, 3
 	r10, _ := h3x.FromLatLng(43.5365, 1.3444, h3x.ResPlace)
 	s.Excl = []uint64{uint64(r10)}
+	s.ExclZone = []uint8{0}
+	s.ExclZoneNames = []string{"test"}
 	s.Records[i].ExclChildren = 1
 	return s
 }
@@ -162,8 +164,8 @@ func TestSnapshotRoundTripAndLookup(t *testing.T) {
 	if len(res.Beacons) != 1 || res.Beacons[0].Beacon.Name != "Test museum" {
 		t.Fatalf("beacon hit: %+v", res.Beacons)
 	}
-	if !res.Excluded {
-		t.Fatal("point sits on an excluded r10 cell")
+	if !res.Excluded || res.ExcludedBy != "test" {
+		t.Fatalf("point sits on an excluded r10 cell: %v %q", res.Excluded, res.ExcludedBy)
 	}
 	// 200 m away: same r8 cell, not excluded, beacon out of range.
 	res2, _ := w.Lookup(43.5365, 1.3470, 0)

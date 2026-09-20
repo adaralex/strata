@@ -43,8 +43,10 @@ type Result struct {
 	Weights  Weights
 	Services []string
 	Beacons  []BeaconHit
-	// Excluded is true when the r10 cell under the point is hard-excluded.
-	Excluded bool
+	// Excluded is true when the r10 cell under the point is hard-excluded;
+	// ExcludedBy names the zone.
+	Excluded   bool
+	ExcludedBy string
 }
 
 // Lookup resolves a point under a propagation scalar (PLAN.md §4, §5).
@@ -89,7 +91,7 @@ func (w *World) Lookup(lat, lon, propagation float64) (Result, error) {
 		if err != nil {
 			return res, err
 		}
-		res.Excluded = w.Snap.IsExcluded(uint64(r10))
+		res.ExcludedBy, res.Excluded = w.Snap.ExcludedBy(uint64(r10))
 	}
 	return res, nil
 }

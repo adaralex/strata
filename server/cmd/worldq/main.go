@@ -109,7 +109,11 @@ func lookup(w *world.World, lat, lon, prop float64) error {
 		fmt.Printf("; IN RANGE %s (%s, grade %d, %.0f m, %s)", h.Beacon.Name, h.Beacon.Ref, h.Beacon.Grade, h.DistanceM, civsLabel(h.Beacon))
 	}
 	fmt.Println()
-	fmt.Printf("exclusion   %d/49 r10 children excluded; this point excluded: %v\n", rec.ExclChildren, res.Excluded)
+	fmt.Printf("exclusion   %d/49 r10 children excluded; this point excluded: %v", rec.ExclChildren, res.Excluded)
+	if res.Excluded {
+		fmt.Printf(" (%s)", res.ExcludedBy)
+	}
+	fmt.Println()
 	fmt.Printf("terrain     water band %d, wild %v, coast %v\n", rec.WaterBand(), rec.IsWild(), rec.TerrainFlags&world.TerrainCoast != 0)
 	fmt.Printf("lookup took %s\n", dt)
 	return nil

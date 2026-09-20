@@ -44,12 +44,27 @@ documented in `server/world/record.go`. Choices made here that PLAN.md left open
   toward edible-loot monsters. Inns are a dwell effect; pharmacies grant potions and
   cures; workshops and repair shops are the forge.
 
+## Amended after the first Midi-Pyrénées build (2026-09-20)
+
+- **Zero-buffer exclusions use centre containment.** Places of worship (buffer 0) claim
+  only the r10 cells whose centre lies inside the footprint, one cell minimum. Overlap
+  containment swallowed the square in front of the church at the Cugnaux town hall.
+  Buffered exclusions (schools, hospitals) keep overlap plus their disk.
+- **The snapshot names the zone** that excluded each r10 cell, so `worldq` can say why a
+  point is dead.
+- **Garages are not forges.** `shop=car_repair` and `motorcycle_repair` are dropped; the
+  forge is hardware, workshop crafts and bicycle repair. Fifteen garages within 3 km of
+  the town hall were drowning two hardware stores.
+- **Private land is never a service or a spawn zone.** A global `skip` rule drops any
+  feature with `access=private|no` from every class, and `leisure=garden` counts as wild
+  only with `garden:type` community, botanical or public. Nine unnamed private gardens
+  were wild zones. Exclusions and terrain still read private features.
+
 ## Open
 
-- **The second walk-test zone.** Cugnaux soil is uniformly Hallstatt periphery. The
-  gradient toward the Phoenicia corridor is real but flat over 3 km. What gives the walk
-  a second zone is whatever grade 1 to 3 beacon the extract turns out to hold within
-  3 km of the centre; `worldq nearby` answers that once the extract is built. If there
-  is none, the options are a deliberately drawn periphery edge through town or a transit
-  trip to Saint-Raymond or Georges-Labit.
+- ~~The second walk-test zone.~~ Answered by the first build: five beacons within 3 km
+  of the town hall, all inheriting soil. The walk-test loop is Hôtel de ville, Noria du
+  Parc du Manoir (grade 2, 190 m), Château de Maurens (grade 1, 730 m), Le Majorat
+  (grade 3, 1.35 km), Médiathèque Clémence Isaure (1.5 km), back through the Vivier
+  parks: about 3.5 km, soil zone then beacon halos.
 - **Curated holdings are unverified.** `data/beacons/toulouse.json` is marked `verify`.

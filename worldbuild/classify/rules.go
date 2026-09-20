@@ -13,7 +13,10 @@ import (
 
 // Rules is the parsed rules/poi_classes.json.
 type Rules struct {
-	Version    int         `json:"version"`
+	Version int `json:"version"`
+	// Skip matchers drop a feature from every class, never from exclusions
+	// or terrain: private land is still private, and a private lake is still water.
+	Skip       []Matcher   `json:"skip"`
 	Classes    []Class     `json:"classes"`
 	Exclusions []Exclusion `json:"exclusions"`
 	Terrain    []Terrain   `json:"terrain"`
@@ -35,7 +38,9 @@ type Class struct {
 // Matcher is one tag pattern. Every key must be present with one of the
 // listed values; "*" matches any value.
 type Matcher struct {
-	Tags          map[string][]string `json:"tags"`
+	Tags map[string][]string `json:"tags"`
+	// Not vetoes the match when any listed key carries one of the listed values.
+	Not           map[string][]string `json:"not"`
 	Grade         uint8               `json:"grade"`
 	Potency       float64             `json:"potency"`
 	WhitelistOnly bool                `json:"whitelist_only"`
@@ -204,12 +209,17 @@ func MatchTags(m map[string][]string, tags map[string]string) (string, bool) {
 // MatchClasses returns the classes a tag set belongs to: the highest-priority
 // match plus any stackable ones, highest priority first.
 func (r *Rules) MatchClasses(tags map[string]string) []Hit {
+	for i := range r.Skip {
+		if r.Skip[i].Matches(tags) {
+			return nil
+		}
+	}
 	var hits []Hit
 	for i := range r.Classes {
 		c := &r.Classes[i]
 		for j := range c.Match {
 			m := &c.Match[j]
-			if label, ok := MatchTags(m.Tags, tags); ok {
+			if label, ok := m.match(tags); ok {
 				hits = append(hits, Hit{Class: c, Subclass: label, Grade: m.Grade, Potency: m.Potency, WhitelistOnly: m.WhitelistOnly})
 				break
 			}
@@ -281,4 +291,29 @@ func labelKey(label string) string {
 		return label[:i]
 	}
 	return label
+}
+
+// Matches reports whether the matcher accepts a tag set.
+func (m *Matcher) Matches(tags map[string]string) bool {
+	_, ok := m.match(tags)
+	return ok
+}
+
+func (m *Matcher) match(tags map[string]string) (string, bool) {
+	label, ok := MatchTags(m.Tags, tags)
+	if !ok {
+		return "", false
+	}
+	for k, vals := range m.Not {
+		v, present := tags[k]
+		if !present {
+			continue
+		}
+		for _, bad := range vals {
+			if bad == "*" || bad == v {
+				return "", false
+			}
+		}
+	}
+	return label, true
 }

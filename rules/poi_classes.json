@@ -1,6 +1,9 @@
 {
-  "$comment": "POI classification schema (PLAN.md §9, §11; decision record 0003). A matcher matches when every listed key is present with one of the listed values ('*' = any value). Classes are ranked by priority; a feature takes the highest-priority class it matches plus any 'stackable' class. Exclusions are applied before classes and always win. Everything here is data: change it and rebuild, no code changes.",
+  "$comment": "POI classification schema (PLAN.md §9, §11; decision record 0003). A matcher matches when every listed key is present with one of the listed values ('*' = any value) and no key in its 'not' map carries a listed value. 'skip' matchers drop a feature from every class (not from exclusions or terrain). Classes are ranked by priority; a feature takes the highest-priority class it matches plus any 'stackable' class. Exclusions are applied before classes and always win. Everything here is data: change it and rebuild, no code changes.",
   "version": 1,
+  "skip": [
+    { "tags": { "access": ["private", "no"] }, "$comment": "Never a service or a spawn zone on private land. Exclusions and terrain still read these features." }
+  ],
   "classes": [
     {
       "id": "beacon",
@@ -57,8 +60,8 @@
         { "tags": { "craft": ["blacksmith", "metal_construction"] }, "potency": 1.0 },
         { "tags": { "shop": ["hardware", "doityourself", "locksmith", "trade"] }, "potency": 0.8 },
         { "tags": { "craft": ["jeweller", "watchmaker", "shoemaker", "carpenter", "joiner", "key_cutter", "electronics", "upholsterer"] }, "potency": 0.8 },
-        { "tags": { "shop": ["bicycle", "car_repair", "motorcycle_repair"] }, "potency": 0.5 },
-        { "tags": { "shop": ["*"], "repair": ["*"] }, "potency": 0.6 }
+        { "tags": { "shop": ["bicycle"] }, "potency": 0.5 },
+        { "tags": { "shop": ["*"], "repair": ["*"] }, "not": { "shop": ["car_repair", "motorcycle_repair", "car", "motorcycle", "tyres"] }, "potency": 0.6 }
       ],
       "geometry": { "prefer": "point" },
       "interaction": { "kind": "reforge", "range_m": 30, "cooldown_s": 0 }
@@ -123,7 +126,8 @@
       "id": "wild",
       "priority": 10,
       "match": [
-        { "tags": { "leisure": ["park", "nature_reserve", "garden"] } },
+        { "tags": { "leisure": ["park", "nature_reserve"] } },
+        { "tags": { "leisure": ["garden"], "garden:type": ["community", "botanical", "public"] } },
         { "tags": { "natural": ["wood", "beach", "heath"] } },
         { "tags": { "landuse": ["forest"] } }
       ],

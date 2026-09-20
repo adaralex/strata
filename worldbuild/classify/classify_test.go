@@ -36,6 +36,11 @@ func TestMatchClasses(t *testing.T) {
 		{map[string]string{"amenity": "pharmacy"}, []string{"apothecary"}, "amenity=pharmacy"},
 		{map[string]string{"tourism": "museum", "amenity": "library"}, []string{"beacon", "scriptorium"}, "tourism=museum"},
 		{map[string]string{"shop": "bicycle", "repair": "yes"}, []string{"forge"}, "shop=bicycle"},
+		{map[string]string{"shop": "car_repair"}, nil, ""},
+		{map[string]string{"shop": "car_repair", "repair": "yes"}, nil, ""},
+		{map[string]string{"shop": "bakery", "access": "private"}, nil, ""},
+		{map[string]string{"leisure": "garden"}, nil, ""},
+		{map[string]string{"leisure": "garden", "garden:type": "community"}, []string{"wild"}, ""},
 		{map[string]string{"shop": "electronics", "repair": "yes"}, []string{"forge"}, "shop=electronics"},
 		{map[string]string{"tourism": "information"}, nil, ""},
 		{map[string]string{"tourism": "information", "information": "office"}, []string{"scriptorium"}, ""},
@@ -136,7 +141,16 @@ func TestReadAndClassifyFixture(t *testing.T) {
 	check("n/2", "apothecary", "")
 	check("n/9", "", "memorial")
 	check("n/10", "beacon", "")
-	check("n/12", "", "worship")
+	check("w/111", "", "worship")
+	if c := got["n/17"]; c != nil && len(c.Hits) > 0 {
+		t.Fatalf("a garage is not a forge any more: %+v", c.Hits)
+	}
+	if c := got["n/18"]; c != nil && len(c.Hits) > 0 {
+		t.Fatalf("access=private drops the feature from every class: %+v", c.Hits)
+	}
+	if c := got["w/112"]; c != nil && len(c.Hits) > 0 {
+		t.Fatalf("a private garden is not wild: %+v", c.Hits)
+	}
 	check("n/14", "beacon", "blocklist:name")
 	check("n/16", "forge", "")
 	check("w/100", "", "school")
