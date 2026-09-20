@@ -29,6 +29,7 @@ namespace Strata.Play
         private UIKit _ui;
         private GroundStrip _strip;
         private SpawnMarkers _markers;
+        private ServiceMarkers _services;
         private Fight _fight;
         private ItemCard _card;
         private Debrief _debrief;
@@ -59,6 +60,8 @@ namespace Strata.Play
             _ui = new UIKit();
             _strip = new GroundStrip(_ui);
             _markers = new SpawnMarkers(map, worldCamera);
+            _services = new ServiceMarkers();
+            map.ConfigureServices(ServiceMarkers.Kinds, _services.Template, _services.OnPoi);
             _fight = new Fight(_ui);
             _card = new ItemCard(_ui);
             _debrief = new Debrief(_ui);

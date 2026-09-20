@@ -115,3 +115,13 @@ elevation is off); the Unity editor freezes Play mode while unfocused, so drive 
 with the Unity window in front.
 
 **Next:** step 4, the shakedown walk on the phone with the 20:29 APK, then step 5.
+
+**Service buildings (2026-09-20, late):** `ServiceMarkers` draws an ink building with a
+sign (glyph, function word, shop name) for hearth, vault, wardrobe, forge, apothecary,
+scriptorium, beacon, spring, caravan and inn, from the map tiles' `poi_label` layer through
+`MapAdapter.ConfigureServices`. Visual only; no effect is applied and nothing is tapped.
+Needs one GO Map asset patch outside git: `GOShared/Shared Core/GOEnumUtils.cs`
+`PoiKindToEnum` normalises Mapbox `type` labels ("Post Office" → `post_office`) and falls back
+to the first word, otherwise multi-word kinds are dropped. Proper follow-up: serve service
+points from worldd using `poi_classes.json`, so the game's own classification, exclusions and
+brand caps decide what shows.

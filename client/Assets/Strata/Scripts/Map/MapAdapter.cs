@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 #if STRATA_GOMAP
 using GoMap;
@@ -67,6 +69,33 @@ namespace Strata.Map
             }
 #endif
             return false;
+        }
+
+        /// <summary>
+        /// Route the map's point-of-interest layer to service markers: for each service, the
+        /// tile kinds that show it; a template to clone per service; and a callback with the
+        /// service, the point's name and the placed clone. Without GO Map this is a no-op.
+        /// </summary>
+        public void ConfigureServices(IReadOnlyDictionary<string, string[]> kindsByService, Func<string, GameObject> templateFor, Action<string, string, GameObject> onPlaced)
+        {
+#if STRATA_GOMAP
+            if (goMap == null || goMap.pois == null) return;
+            var list = new List<GOPOIRendering>();
+            foreach (var kv in kindsByService)
+            {
+                var service = kv.Key;
+                var template = templateFor(service);
+                foreach (var kindName in kv.Value)
+                {
+                    if (!Enum.TryParse(kindName, true, out GOPOIKind kind)) { Debug.LogWarning($"MapAdapter: no POI kind '{kindName}' for {service}"); continue; }
+                    var r = new GOPOIRendering { kind = kind, prefab = template, tag = "", OnPoiLoad = new GOFeatureEvent() };
+                    r.OnPoiLoad.AddListener((feature, clone) => onPlaced(service, feature != null ? feature.name : null, clone));
+                    list.Add(r);
+                }
+            }
+            goMap.pois.renderingOptions = list.ToArray();
+            goMap.pois.disabled = false;
+#endif
         }
 
         public bool UsingGoMap
