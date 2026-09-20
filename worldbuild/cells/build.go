@@ -144,6 +144,30 @@ func Build(in Inputs) (*world.Snapshot, Stats, error) {
 		}
 		snap.ExclZone[i] = id
 	}
+	for zi := range zones {
+		z := &zones[zi]
+		zn := world.Zone{ID: uint32(zi), Kind: z.ID, Ref: z.F.Ref, Name: z.F.Name(), BufferM: z.BufferM, Lat: z.F.Point.Lat(), Lon: z.F.Point.Lon()}
+		switch {
+		case len(z.F.Multi) > 1:
+			zn.Geometry = geojson.NewGeometry(z.F.Multi)
+		case z.F.Polygon != nil:
+			zn.Geometry = geojson.NewGeometry(z.F.Polygon)
+		case z.F.Line != nil:
+			zn.Geometry = geojson.NewGeometry(z.F.Line)
+		}
+		snap.Zones = append(snap.Zones, zn)
+	}
+	idxCells := make([]uint64, 0, len(zoneIndex))
+	for c := range zoneIndex {
+		idxCells = append(idxCells, c)
+	}
+	sort.Slice(idxCells, func(i, j int) bool { return idxCells[i] < idxCells[j] })
+	for _, c := range idxCells {
+		for _, zi := range zoneIndex[c] {
+			snap.ZoneIdx = append(snap.ZoneIdx, c)
+			snap.ZoneIdxZone = append(snap.ZoneIdxZone, uint32(zi))
+		}
+	}
 	st.ExclCells = len(snap.Excl)
 	for _, r10 := range snap.Excl {
 		parent, err := h3x.Parent(h3x.Cell(r10), h3x.ResWeight)

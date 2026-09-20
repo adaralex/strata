@@ -12,6 +12,8 @@ import (
 
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/geojson"
+
+	"github.com/adaralex/strata/server/world/h3x"
 )
 
 // Snapshot file names inside a snapshot directory. cells.bin is the fixed
@@ -21,10 +23,11 @@ const (
 	FileCells   = "cells.bin"
 	FileBeacons = "beacons.json"
 	FilePOIs    = "pois.json"
+	FileZones   = "zones.json"
 	FileCivs    = "civs.json"
 
 	snapshotMagic   = "STR8"
-	snapshotVersion = 2
+	snapshotVersion = 3
 )
 
 // Snapshot is one immutable world build (PLAN.md §14 step 4/5).
@@ -43,10 +46,48 @@ type Snapshot struct {
 	Excl          []uint64
 	ExclZone      []uint8
 	ExclZoneNames []string
+	// ZoneIdx and ZoneIdxZone are pairs (r10 cell, zone id) sorted by cell:
+	// the spatial index for the exact geometry test in Lookup. It covers one
+	// ring beyond the excluded cells so a point just outside still gets tested.
+	ZoneIdx     []uint64
+	ZoneIdxZone []uint32
 
 	Beacons []Beacon
 	POIs    []POI
+	// Zones are the exclusion geometries (PLAN.md §11) with their buffers.
+	Zones []Zone
 }
+
+// Zone is one exclusion feature: the geometry that no gameplay may touch,
+// plus the buffer around it.
+type Zone struct {
+	ID       uint32            `json:"id"`
+	Kind     string            `json:"kind"` // exclusion id: school, worship, blocklist...
+	Ref      string            `json:"ref"`
+	Name     string            `json:"name,omitempty"`
+	BufferM  float64           `json:"buffer_m"`
+	Lat      float64           `json:"lat"`
+	Lon      float64           `json:"lon"`
+	Geometry *geojson.Geometry `json:"geometry,omitempty"`
+}
+
+// DistanceM is the distance from p to the zone geometry, 0 inside.
+func (z *Zone) DistanceM(p orb.Point) float64 {
+	if z.Geometry != nil {
+		switch g := z.Geometry.Geometry().(type) {
+		case orb.Polygon:
+			return h3x.DistanceToPolygonM(p, g)
+		case orb.MultiPolygon:
+			return h3x.DistanceToMultiPolygonM(p, g)
+		case orb.LineString:
+			return h3x.DistanceToLineM(p, g)
+		}
+	}
+	return h3x.DistanceM(p, orb.Point{z.Lon, z.Lat})
+}
+
+// Contains reports whether p is inside the zone or its buffer.
+func (z *Zone) Contains(p orb.Point) bool { return z.DistanceM(p) <= z.BufferM }
 
 // Beacon is a museum, gallery or historic site that shifts spawn tier and
 // carries its own civilization vector (PLAN.md §6, §9).
@@ -133,6 +174,9 @@ func (s *Snapshot) Write(dir string, civsJSON []byte) error {
 	if err := writeJSON(filepath.Join(dir, FilePOIs), s.POIs); err != nil {
 		return err
 	}
+	if err := writeJSON(filepath.Join(dir, FileZones), s.Zones); err != nil {
+		return err
+	}
 	return os.WriteFile(filepath.Join(dir, FileCivs), civsJSON, 0o644)
 }
 
@@ -200,7 +244,19 @@ func (s *Snapshot) encodeCells(w io.Writer) error {
 	if len(s.ExclZone) != len(s.Excl) {
 		return fmt.Errorf("snapshot: %d excluded cells but %d zone ids", len(s.Excl), len(s.ExclZone))
 	}
-	return put(s.ExclZone)
+	if err := put(s.ExclZone); err != nil {
+		return err
+	}
+	if len(s.ZoneIdxZone) != len(s.ZoneIdx) {
+		return fmt.Errorf("snapshot: %d zone index cells but %d zone ids", len(s.ZoneIdx), len(s.ZoneIdxZone))
+	}
+	if err := put(uint32(len(s.ZoneIdx))); err != nil {
+		return err
+	}
+	if err := put(s.ZoneIdx); err != nil {
+		return err
+	}
+	return put(s.ZoneIdxZone)
 }
 
 // Read loads a snapshot directory.
@@ -218,6 +274,9 @@ func Read(dir string) (*Snapshot, error) {
 		return nil, err
 	}
 	if err := readJSON(filepath.Join(dir, FilePOIs), &s.POIs); err != nil {
+		return nil, err
+	}
+	if err := readJSON(filepath.Join(dir, FileZones), &s.Zones); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -303,6 +362,18 @@ func decodeCells(r io.Reader) (*Snapshot, error) {
 	}
 	s.ExclZone = make([]uint8, nExcl)
 	if err := get(s.ExclZone); err != nil {
+		return nil, err
+	}
+	var nIdx uint32
+	if err := get(&nIdx); err != nil {
+		return nil, err
+	}
+	s.ZoneIdx = make([]uint64, nIdx)
+	if err := get(s.ZoneIdx); err != nil {
+		return nil, err
+	}
+	s.ZoneIdxZone = make([]uint32, nIdx)
+	if err := get(s.ZoneIdxZone); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -393,4 +464,31 @@ func readJSON(path string, v any) error {
 		return err
 	}
 	return json.Unmarshal(b, v)
+}
+
+// ZonesAt returns the ids of the exclusion zones indexed on an r10 cell.
+func (s *Snapshot) ZonesAt(r10 uint64) []uint32 {
+	i := sort.Search(len(s.ZoneIdx), func(i int) bool { return s.ZoneIdx[i] >= r10 })
+	j := i
+	for j < len(s.ZoneIdx) && s.ZoneIdx[j] == r10 {
+		j++
+	}
+	return s.ZoneIdxZone[i:j]
+}
+
+// ZoneContaining returns the first zone whose buffered geometry contains
+// the point, using the r10 index. This is the exact test behind "no
+// gameplay at" a place; the r10 set is only the cheap raster for spawns.
+func (s *Snapshot) ZoneContaining(lat, lon float64) (*Zone, bool) {
+	r10, err := h3x.FromLatLng(lat, lon, h3x.ResPlace)
+	if err != nil {
+		return nil, false
+	}
+	p := orb.Point{lon, lat}
+	for _, id := range s.ZonesAt(uint64(r10)) {
+		if int(id) < len(s.Zones) && s.Zones[id].Contains(p) {
+			return &s.Zones[id], true
+		}
+	}
+	return nil, false
 }

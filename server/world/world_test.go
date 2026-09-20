@@ -133,6 +133,8 @@ func buildTestSnapshot(t *testing.T, civs *Civs) *Snapshot {
 	s.Excl = []uint64{uint64(r10)}
 	s.ExclZone = []uint8{0}
 	s.ExclZoneNames = []string{"test"}
+	s.Zones = []Zone{{ID: 0, Kind: "test", Ref: "n/9", BufferM: 20, Lat: 43.5365, Lon: 1.3444}}
+	s.ZoneIdx, s.ZoneIdxZone = []uint64{uint64(r10)}, []uint32{0}
 	s.Records[i].ExclChildren = 1
 	return s
 }
@@ -164,12 +166,15 @@ func TestSnapshotRoundTripAndLookup(t *testing.T) {
 	if len(res.Beacons) != 1 || res.Beacons[0].Beacon.Name != "Test museum" {
 		t.Fatalf("beacon hit: %+v", res.Beacons)
 	}
-	if !res.Excluded || res.ExcludedBy != "test" {
-		t.Fatalf("point sits on an excluded r10 cell: %v %q", res.Excluded, res.ExcludedBy)
+	if !res.ExcludedCell || res.ExcludedCellBy != "test" {
+		t.Fatalf("point sits on an excluded r10 cell: %v %q", res.ExcludedCell, res.ExcludedCellBy)
+	}
+	if !res.Excluded || res.Zone == nil || res.Zone.Kind != "test" {
+		t.Fatalf("point is inside the zone buffer: %+v", res.Zone)
 	}
 	// 200 m away: same r8 cell, not excluded, beacon out of range.
 	res2, _ := w.Lookup(43.5365, 1.3470, 0)
-	if res2.Excluded || len(res2.Beacons) != 0 {
+	if res2.Excluded || res2.ExcludedCell || len(res2.Beacons) != 0 {
 		t.Fatalf("200 m away: %+v", res2)
 	}
 	out, _ := w.Lookup(48.85, 2.35, 0)

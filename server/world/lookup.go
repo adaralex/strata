@@ -43,10 +43,14 @@ type Result struct {
 	Weights  Weights
 	Services []string
 	Beacons  []BeaconHit
-	// Excluded is true when the r10 cell under the point is hard-excluded;
-	// ExcludedBy names the zone.
-	Excluded   bool
-	ExcludedBy string
+	// Excluded is true when the point lies inside an exclusion geometry or its
+	// buffer: no interaction here. Zone is that zone.
+	Excluded bool
+	Zone     *Zone
+	// ExcludedCell is true when the r10 cell under the point is in the raster
+	// set spawn placement uses; ExcludedCellBy names the zone that claimed it.
+	ExcludedCell   bool
+	ExcludedCellBy string
 }
 
 // Lookup resolves a point under a propagation scalar (PLAN.md §4, §5).
@@ -91,7 +95,8 @@ func (w *World) Lookup(lat, lon, propagation float64) (Result, error) {
 		if err != nil {
 			return res, err
 		}
-		res.ExcludedBy, res.Excluded = w.Snap.ExcludedBy(uint64(r10))
+		res.ExcludedCellBy, res.ExcludedCell = w.Snap.ExcludedBy(uint64(r10))
+		res.Zone, res.Excluded = w.Snap.ZoneContaining(lat, lon)
 	}
 	return res, nil
 }

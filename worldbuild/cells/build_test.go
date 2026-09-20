@@ -119,8 +119,19 @@ func TestBuildFixture(t *testing.T) {
 	// The memorial and the church are exclusion zones: the r10 cell under
 	// the church is excluded and named, and the record counts children.
 	church, _ := w.Lookup(43.5363, 1.3438, 0)
-	if !church.Excluded || church.ExcludedBy != "worship" || church.Record.ExclChildren == 0 {
-		t.Fatalf("church must be excluded by worship: %+v %q", church.Record, church.ExcludedBy)
+	if !church.ExcludedCell || church.ExcludedCellBy != "worship" || church.Record.ExclChildren == 0 {
+		t.Fatalf("church cell must be in the raster as worship: %+v %q", church.Record, church.ExcludedCellBy)
+	}
+	if !church.Excluded || church.Zone == nil || church.Zone.Kind != "worship" || church.Zone.Ref != "w/111" {
+		t.Fatalf("inside the church: no interaction: %+v", church.Zone)
+	}
+	// The bakery 60 m from the church is not inside any zone, whatever its cell.
+	bakery, _ := w.Lookup(43.5368, 1.3450, 0)
+	if bakery.Excluded {
+		t.Fatalf("bakery must allow interaction: %+v", bakery.Zone)
+	}
+	if len(w.Snap.Zones) == 0 || len(w.Snap.ZoneIdx) == 0 {
+		t.Fatal("snapshot must carry zones and their index")
 	}
 	// Zero-buffer zones use centre containment, so the church claims one
 	// r10 cell, not every cell its footprint overlaps.
