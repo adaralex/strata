@@ -9,7 +9,8 @@
       "id": "beacon",
       "priority": 100,
       "match": [
-        { "tags": { "tourism": ["museum", "gallery"] }, "grade": 3 },
+        { "tags": { "tourism": ["museum"] }, "grade": 2, "$comment": "Uncurated museums are grade 2 and inherit soil; a curated entry under data/beacons raises the grade to 3 or 4." },
+        { "tags": { "tourism": ["gallery"] }, "grade": 1, "$comment": "Commercial art galleries. Toulouse centre has eight within 600 m of the Capitole." },
         { "tags": { "historic": ["archaeological_site", "ruins"] }, "grade": 2 },
         { "tags": { "historic": ["monument", "castle", "fort", "city_gate"] }, "grade": 1 },
         { "tags": { "historic": ["memorial"] }, "grade": 1, "whitelist_only": true }
@@ -61,7 +62,7 @@
         { "tags": { "shop": ["hardware", "doityourself", "locksmith", "trade"] }, "potency": 0.8 },
         { "tags": { "craft": ["jeweller", "watchmaker", "shoemaker", "carpenter", "joiner", "key_cutter", "electronics", "upholsterer"] }, "potency": 0.8 },
         { "tags": { "shop": ["bicycle"] }, "potency": 0.5 },
-        { "tags": { "shop": ["*"], "repair": ["*"] }, "not": { "shop": ["car_repair", "motorcycle_repair", "car", "motorcycle", "tyres"] }, "potency": 0.6 }
+        { "tags": { "shop": ["*"], "repair": ["*"] }, "not": { "shop": ["car_repair", "motorcycle_repair", "car", "motorcycle", "tyres", "mobile_phone"] }, "potency": 0.6 }
       ],
       "geometry": { "prefer": "point" },
       "interaction": { "kind": "reforge", "range_m": 30, "cooldown_s": 0 }

@@ -55,6 +55,12 @@ documented in `server/world/record.go`. Choices made here that PLAN.md left open
 - **Garages are not forges.** `shop=car_repair` and `motorcycle_repair` are dropped; the
   forge is hardware, workshop crafts and bicycle repair. Fifteen garages within 3 km of
   the town hall were drowning two hardware stores.
+- **Beacon grades are earned by curation.** An uncurated `tourism=museum` is grade 2 and
+  inherits soil; a commercial `tourism=gallery` is grade 1. Grades 3 and 4 come only from
+  `data/beacons`. Eight art dealers within 600 m of the Capitole were ranking with
+  Saint-Raymond.
+- **Phone repair shops are not forges** (`shop=mobile_phone` is vetoed even with a
+  repair tag). Bicycle repair and workshop crafts stay.
 - **Private land is never a service or a spawn zone.** A global `skip` rule drops any
   feature with `access=private|no` from every class, and `leisure=garden` counts as wild
   only with `garden:type` community, botanical or public. Nine unnamed private gardens

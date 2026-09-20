@@ -117,9 +117,9 @@ Listed in full in PLAN.md §21. The ones that affect code:
 
 - ~~Which metro area is the phase 0 city.~~ Decided: Cugnaux, built from the whole
   `europe/france/midi-pyrenees` extract, unclipped (decision record 0003). The first
-  walk-test zone is Hallstatt periphery soil; the second is whatever beacon the extract
-  halos found by the first build: the Noria du Parc du Manoir, Château de Maurens and
-  Le Majorat (decision record 0003).
+  walk-test zone is Hallstatt periphery soil; the second is the beacon halos the first
+  build found: the Noria du Parc du Manoir, Château de Maurens and Le Majorat
+  (decision record 0003).
 - Team size, which sets whether phase 0 runs four tracks in parallel or one at a time.
 - Whether AR is in scope at launch now that the client is Unity and GO Map (decision
   record 0002).

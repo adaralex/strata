@@ -38,10 +38,11 @@ func TestMatchClasses(t *testing.T) {
 		{map[string]string{"shop": "bicycle", "repair": "yes"}, []string{"forge"}, "shop=bicycle"},
 		{map[string]string{"shop": "car_repair"}, nil, ""},
 		{map[string]string{"shop": "car_repair", "repair": "yes"}, nil, ""},
+		{map[string]string{"shop": "mobile_phone", "repair": "yes"}, nil, ""},
+		{map[string]string{"shop": "electronics", "repair": "yes"}, []string{"forge"}, "shop=electronics"},
 		{map[string]string{"shop": "bakery", "access": "private"}, nil, ""},
 		{map[string]string{"leisure": "garden"}, nil, ""},
 		{map[string]string{"leisure": "garden", "garden:type": "community"}, []string{"wild"}, ""},
-		{map[string]string{"shop": "electronics", "repair": "yes"}, []string{"forge"}, "shop=electronics"},
 		{map[string]string{"tourism": "information"}, nil, ""},
 		{map[string]string{"tourism": "information", "information": "office"}, []string{"scriptorium"}, ""},
 		{map[string]string{"highway": "residential"}, nil, ""},
@@ -67,6 +68,12 @@ func TestMatchClasses(t *testing.T) {
 	}
 	if h := r.MatchClasses(map[string]string{"historic": "memorial"}); !h[0].WhitelistOnly {
 		t.Fatal("memorial beacons are whitelist-only")
+	}
+	if h := r.MatchClasses(map[string]string{"tourism": "museum"}); h[0].Grade != 2 {
+		t.Fatalf("uncurated museum grade %d, want 2", h[0].Grade)
+	}
+	if h := r.MatchClasses(map[string]string{"tourism": "gallery"}); h[0].Grade != 1 {
+		t.Fatalf("gallery grade %d, want 1", h[0].Grade)
 	}
 	if h := r.MatchClasses(map[string]string{"shop": "supermarket"}); h[0].Potency != 0.4 {
 		t.Fatalf("supermarket potency %f", h[0].Potency)

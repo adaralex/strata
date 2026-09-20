@@ -162,7 +162,7 @@ func TestBuildFixture(t *testing.T) {
 	for _, b := range w.Snap.Beacons {
 		switch b.Ref {
 		case "w/102":
-			if b.Grade != 3 || b.Source != "cell_soil" || b.Polygon() == nil {
+			if b.Grade != 2 || b.Source != "cell_soil" || b.Polygon() == nil {
 				t.Fatalf("museum beacon: %+v", b)
 			}
 		case "n/10":
@@ -174,7 +174,7 @@ func TestBuildFixture(t *testing.T) {
 		}
 	}
 	inMuseum, _ := w.Lookup(43.5350, 1.3481, 0)
-	if len(inMuseum.Beacons) != 1 || inMuseum.Beacons[0].DistanceM != 0 || inMuseum.Record.BeaconGrade != 3 {
+	if len(inMuseum.Beacons) != 1 || inMuseum.Beacons[0].DistanceM != 0 || inMuseum.Record.BeaconGrade != 2 {
 		t.Fatalf("inside the museum: %+v grade %d", inMuseum.Beacons, inMuseum.Record.BeaconGrade)
 	}
 	farFromMuseum, _ := w.Lookup(43.5365, 1.3444, 0)
@@ -202,4 +202,15 @@ func TestBuildFixture(t *testing.T) {
 		}
 	}
 	_ = h3x.ResWeight
+}
+
+func TestCuratedRaisesGrade(t *testing.T) {
+	list := []Curated{{Grade: 3, Civs: map[string]float64{"hallstatt": 1}}}
+	list[0].Match.NameContains = "saint-raymond"
+	if c := findCurated(list, "w/1", "Musée Saint-Raymond"); c == nil || c.Grade != 3 {
+		t.Fatalf("curated match by name failed: %+v", c)
+	}
+	if c := findCurated(list, "w/2", "Musée du Vieux-Toulouse"); c != nil {
+		t.Fatal("unrelated museum must not match")
+	}
 }
