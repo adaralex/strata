@@ -1,0 +1,6 @@
+{ "type": "FeatureCollection", "$comment": "Aksum (PLAN §2). Core in Tigray and Eritrea; periphery over the Ethiopian highlands, the Red Sea, Yemen and Hadhramaut; corridors down the Swahili coast and across the monsoon to Meluhha. lon,lat.", "features": [
+ { "type": "Feature", "properties": { "civ": "aksum", "kind": "core", "name": "Tigray and Eritrea" }, "geometry": { "type": "Polygon", "coordinates": [[[37.5,16.0],[40.5,16.0],[40.0,13.0],[38.0,12.5],[36.5,14.0],[37.5,16.0]]] } },
+ { "type": "Feature", "properties": { "civ": "aksum", "kind": "periphery", "cost_km": 150, "name": "Ethiopian highlands, Red Sea, Yemen, Hadhramaut" }, "geometry": { "type": "Polygon", "coordinates": [[[35.0,17.5],[43.5,18.0],[50.5,16.0],[52.0,13.0],[46.0,12.0],[42.0,9.0],[37.5,7.0],[34.5,10.0],[35.0,17.5]]] } },
+ { "type": "Feature", "properties": { "civ": "aksum", "kind": "corridor", "cost_km": 250, "name": "Swahili coast to Mozambique" }, "geometry": { "type": "LineString", "coordinates": [[43.5,11.5],[45.5,7.0],[41.0,-2.0],[39.5,-7.0],[40.5,-13.0],[36.0,-19.0],[35.0,-24.0]] } },
+ { "type": "Feature", "properties": { "civ": "aksum", "kind": "corridor", "cost_km": 300, "name": "Monsoon corridor to Meluhha" }, "geometry": { "type": "LineString", "coordinates": [[43.5,12.5],[50.0,13.5],[57.0,20.0],[60.0,24.0],[66.9,24.8]] } }
+]}

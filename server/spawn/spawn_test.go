@@ -142,7 +142,7 @@ func TestSpawnShape(t *testing.T) {
 		for _, sp := range sps {
 			total++
 			seen[sp.Civ]++
-			if sp.Civ != "hallstatt" && sp.Civ != "phoenicia" && sp.Civ != "etruria" {
+			if _, ok := s.World.Civs.ByKey(sp.Civ); !ok {
 				t.Fatalf("unexpected civ %s", sp.Civ)
 			}
 			if !strings.HasPrefix(sp.Kind, sp.Civ+".") {

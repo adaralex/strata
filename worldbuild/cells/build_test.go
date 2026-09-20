@@ -91,7 +91,7 @@ func TestBuildFixture(t *testing.T) {
 		return out
 	}
 	got := names(res.Weights.Top)
-	if len(got) != 3 || got[0] != "hallstatt" || got[1] != "phoenicia" || got[2] != "etruria" {
+	if len(got) < 3 || got[0] != "hallstatt" || got[1] != "phoenicia" || got[2] != "etruria" {
 		t.Fatalf("civ order %v, weights %+v", got, res.Weights.Top)
 	}
 	if res.Record.Cost[0] != 150 {
@@ -212,5 +212,50 @@ func TestCuratedRaisesGrade(t *testing.T) {
 	}
 	if c := findCurated(list, "w/2", "Musée du Vieux-Toulouse"); c != nil {
 		t.Fatal("unrelated museum must not match")
+	}
+}
+
+// flatField is a CostField that returns the same fifteen costs everywhere.
+type flatField struct{ costs [world.NumCivs]float64 }
+
+func (f flatField) At(float64, float64) ([world.NumCivs]float64, bool) { return f.costs, true }
+
+func TestBuildWithDriftField(t *testing.T) {
+	root := filepath.Join("..", "..")
+	civsJSON, _ := os.ReadFile(filepath.Join(root, "rules", "civs.json"))
+	civs, _ := world.ParseCivs(civsJSON)
+	rules, _ := classify.LoadRules(filepath.Join(root, "rules", "poi_classes.json"))
+	layers, _ := LoadLayers(filepath.Join(root, "data", "cores"), civs)
+	ex, err := classify.ReadOSM(context.Background(), filepath.Join("..", "testdata", "cugnaux.osm"), rules, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res := classify.Run(ex, rules, nil)
+	// Every civilization reachable at 1000 km, except Hallstatt whose field
+	// cost is worse than its layer: the layer must win there.
+	var f flatField
+	for i := range f.costs {
+		f.costs[i] = 1000
+	}
+	hal, _ := civs.ByKey("hallstatt")
+	f.costs[hal] = 5000
+	snap, st, err := Build(Inputs{BuildID: "drift-test", Civs: civs, Rules: rules, Layers: layers, Classified: res, Bounds: ex.Bounds, Drift: f})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st.Reached != st.Cells {
+		t.Fatal("every cell reached")
+	}
+	centre, _ := h3x.FromLatLng(43.5365, 1.3444, h3x.ResWeight)
+	rec := snap.Records[snap.Find(uint64(centre))]
+	if rec.Civ[0] != hal || rec.Cost[0] != 150 {
+		t.Fatalf("Hallstatt layer cost 150 must beat the field's 5000: %+v", rec)
+	}
+	if rec.ResidualCost == world.CostUnreached {
+		t.Fatal("fifteen reached civilizations leave a residual")
+	}
+	w := world.Derive(&rec, civs, 0)
+	if len(w.Top) != world.TopK || w.Residual <= 0 {
+		t.Fatalf("weights: %+v", w)
 	}
 }

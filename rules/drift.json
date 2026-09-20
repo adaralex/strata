@@ -1,0 +1,19 @@
+{
+  "$comment": "Drift solve parameters (PLAN.md §4, decision record 0005). unit_cost_km is the cost of crossing one km of each terrain class, in the km-equivalent unit the cell record stores. Maritime civilizations (civs.json) get the maritime multipliers on coast and ocean, landlocked ones the landlocked multipliers; a civilization's own ocean_mul in civs.json multiplies on top (Lapita 0.5, so the Pacific is theirs). Sources start at the layer cost of data/cores (core 0, periphery and corridor as given).",
+  "version": 1,
+  "resolution": 5,
+  "raster_step_deg": 0.05,
+  "unit_cost_km": {
+    "ocean": 2.0,
+    "land": 1.0,
+    "coast": 1.0,
+    "river": 0.6,
+    "lake": 1.5,
+    "mountain": 3.0,
+    "desert": 3.0,
+    "ice": 6.0
+  },
+  "maritime": { "coast_mul": 0.5, "ocean_mul": 0.5 },
+  "landlocked": { "coast_mul": 1.2, "ocean_mul": 4.0 },
+  "max_cost_km": 65000
+}

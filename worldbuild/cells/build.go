@@ -32,6 +32,15 @@ type Inputs struct {
 	Classified *classify.Result
 	Bounds     classify.BBox
 	Progress   io.Writer
+	// Drift, when set, supplies the planet cost field of track 2; a cell's
+	// cost to a civilization is the lower of its layer cost and the field.
+	Drift CostField
+}
+
+// CostField is the drift field interface (worldbuild/drift.Field satisfies
+// it); declared here so cells does not import drift, which imports cells.
+type CostField interface {
+	At(lat, lon float64) ([world.NumCivs]float64, bool)
 }
 
 // Stats summarises a build.
@@ -72,7 +81,7 @@ func Build(in Inputs) (*world.Snapshot, Stats, error) {
 	log("cells: %d r8 cells over %.3f,%.3f - %.3f,%.3f", len(cells), b.MinLat, b.MinLon, b.MaxLat, b.MaxLon)
 
 	// 1. Soil: costs from the civilization layers, in parallel.
-	reached := soil(cells, snap.Records, in.Layers, in.Civs)
+	reached := soil(cells, snap.Records, in.Layers, in.Civs, in.Drift)
 	st.Reached = reached
 	log("soil: %d/%d cells reached by at least one layer", reached, len(cells))
 
@@ -352,7 +361,7 @@ func Build(in Inputs) (*world.Snapshot, Stats, error) {
 
 // soil fills Civ/Cost/ResidualCost for every cell from the layers and
 // returns how many cells at least one layer reaches.
-func soil(cells []h3x.Cell, recs []world.Record, layers []Layer, civs *world.Civs) int {
+func soil(cells []h3x.Cell, recs []world.Record, layers []Layer, civs *world.Civs, field CostField) int {
 	workers := runtime.NumCPU()
 	var wg sync.WaitGroup
 	var reachedMu sync.Mutex
@@ -375,7 +384,7 @@ func soil(cells []h3x.Cell, recs []world.Record, layers []Layer, civs *world.Civ
 				if err != nil {
 					continue
 				}
-				if fillSoil(&recs[i], p, layers, civs) {
+				if fillSoil(&recs[i], p, layers, civs, field) {
 					local++
 				}
 			}
@@ -394,10 +403,17 @@ type civCost struct {
 	norm float64 // cost / lambda_base
 }
 
-func fillSoil(rec *world.Record, p orb.Point, layers []Layer, civs *world.Civs) bool {
+func fillSoil(rec *world.Record, p orb.Point, layers []Layer, civs *world.Civs, field CostField) bool {
 	var best [world.NumCivs]float64
 	for i := range best {
 		best[i] = math.Inf(1)
+	}
+	if field != nil {
+		if costs, ok := field.At(p.Lat(), p.Lon()); ok {
+			for i, c := range costs {
+				best[i] = c / civs.CostUnitKm
+			}
+		}
 	}
 	for i := range layers {
 		l := &layers[i]
@@ -425,11 +441,12 @@ func fillSoil(rec *world.Record, p orb.Point, layers []Layer, civs *world.Civs) 
 			rec.Cost[i] = world.CostUnreached
 		}
 	}
+	cMin := world.CMinKm(rec, civs)
 	var tail []world.CivWeight
 	for _, r := range ranked[min(world.TopK, len(ranked)):] {
-		tail = append(tail, world.CivWeight{Civ: r.civ, Weight: math.Exp(-r.cost * civs.CostUnitKm / civs.Lambda(r.civ, 0))})
+		tail = append(tail, world.CivWeight{Civ: r.civ, Weight: math.Exp(-r.cost * civs.CostUnitKm / civs.LambdaEff(r.civ, 0, cMin))})
 	}
-	rec.ResidualCost = world.FoldResidual(tail, civs)
+	rec.ResidualCost = world.FoldResidual(tail, civs, cMin)
 	return true
 }
 

@@ -1,0 +1,4 @@
+{ "type": "FeatureCollection", "$comment": "Minoa (PLAN §2). Coarse phase 0 layer for the drift solve. lon,lat.", "features": [
+ { "type": "Feature", "properties": { "civ": "minoa", "kind": "core", "name": "Crete" }, "geometry": { "type": "Polygon", "coordinates": [[[23.4,35.7],[26.4,35.7],[26.4,34.8],[23.4,34.8],[23.4,35.7]]] } },
+ { "type": "Feature", "properties": { "civ": "minoa", "kind": "periphery", "cost_km": 150, "name": "Cyclades, Santorini, Aegean coasts" }, "geometry": { "type": "Polygon", "coordinates": [[[22.5,40.5],[27.5,40.5],[28.0,36.5],[26.0,35.5],[22.5,36.0],[22.5,40.5]]] } }
+]}

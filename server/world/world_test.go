@@ -82,12 +82,12 @@ func TestDeriveUnreached(t *testing.T) {
 func TestFoldResidual(t *testing.T) {
 	civs, _ := loadCivs(t)
 	tail := []CivWeight{{Civ: 1, Weight: 0.05}, {Civ: 2, Weight: 0.03}}
-	cost := FoldResidual(tail, civs)
-	back := math.Exp(-float64(cost) * civs.CostUnitKm / civs.MeanLambda(0))
+	cost := FoldResidual(tail, civs, 150)
+	back := math.Exp(-float64(cost) * civs.CostUnitKm / civs.MeanLambdaEff(0, 150))
 	if math.Abs(back-0.08) > 0.002 {
 		t.Fatalf("residual should reproduce the tail weight 0.08, got %f", back)
 	}
-	if FoldResidual(nil, civs) != CostUnreached {
+	if FoldResidual(nil, civs, 0) != CostUnreached {
 		t.Fatal("empty tail must be unreached")
 	}
 }

@@ -1,0 +1,4 @@
+{ "type": "FeatureCollection", "$comment": "Chavín (PLAN §2). Coarse phase 0 layer. lon,lat.", "features": [
+ { "type": "Feature", "properties": { "civ": "chavin", "kind": "core", "name": "Ancash and the central coast" }, "geometry": { "type": "Polygon", "coordinates": [[[-78.5,-8.0],[-76.5,-8.5],[-76.0,-11.5],[-77.5,-12.5],[-79.0,-9.5],[-78.5,-8.0]]] } },
+ { "type": "Feature", "properties": { "civ": "chavin", "kind": "periphery", "cost_km": 150, "name": "Peruvian coast and highlands" }, "geometry": { "type": "Polygon", "coordinates": [[[-81.5,-4.0],[-75.0,-6.0],[-73.5,-13.5],[-76.5,-15.5],[-80.0,-9.0],[-81.5,-4.0]]] } }
+]}

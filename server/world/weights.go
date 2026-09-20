@@ -21,13 +21,15 @@ type Weights struct {
 
 // Derive turns stored costs into weights:
 //
-//	lambda_i = lambda_base_i * (1 + k_i * propagation)
+//	c_min    = min over stored costs
+//	lambda_i = lambda_base_i * (1 + k_i * propagation) + smear * c_min
 //	w_i      = exp(-cost_i / lambda_i)
 //	weights  = normalise(w)
 //	purity   = max(w) / sum(w)
 func Derive(rec *Record, civs *Civs, propagation float64) Weights {
 	propagation = math.Max(0, math.Min(1, propagation))
 	unit := civs.CostUnitKm
+	cMin := CMinKm(rec, civs)
 	var raw [TopK]float64
 	var sum, maxW float64
 	for i := 0; i < TopK; i++ {
@@ -35,7 +37,7 @@ func Derive(rec *Record, civs *Civs, propagation float64) Weights {
 			continue
 		}
 		cost := float64(rec.Cost[i]) * unit
-		raw[i] = math.Exp(-cost / civs.Lambda(rec.Civ[i], propagation))
+		raw[i] = math.Exp(-cost / civs.LambdaEff(rec.Civ[i], propagation, cMin))
 		sum += raw[i]
 		if raw[i] > maxW {
 			maxW = raw[i]
@@ -43,7 +45,7 @@ func Derive(rec *Record, civs *Civs, propagation float64) Weights {
 	}
 	var res float64
 	if rec.ResidualCost != CostUnreached {
-		res = math.Exp(-float64(rec.ResidualCost) * unit / civs.MeanLambda(propagation))
+		res = math.Exp(-float64(rec.ResidualCost) * unit / civs.MeanLambdaEff(propagation, cMin))
 		sum += res
 	}
 	out := Weights{Reached: sum > 0}
@@ -60,11 +62,26 @@ func Derive(rec *Record, civs *Civs, propagation float64) Weights {
 	return out
 }
 
+// CMinKm is the cheapest stored cost of a record in km, the anchor of the
+// smear term. +Inf when nothing is reached.
+func CMinKm(rec *Record, civs *Civs) float64 {
+	m := math.Inf(1)
+	for i := 0; i < TopK; i++ {
+		if rec.Civ[i] != NoCiv && rec.Cost[i] != CostUnreached {
+			m = math.Min(m, float64(rec.Cost[i])*civs.CostUnitKm)
+		}
+	}
+	if math.IsInf(m, 1) {
+		return 0
+	}
+	return m
+}
+
 // FoldResidual turns the weights of the civilizations that did not make the
-// top K into one pseudo-cost such that exp(-residual/meanLambda) equals their
-// summed baseline weight. Used by the builder; returns CostUnreached when the
-// tail is empty.
-func FoldResidual(tail []CivWeight, civs *Civs) uint16 {
+// top K into one pseudo-cost such that exp(-residual/meanLambdaEff) equals
+// their summed baseline weight at the cell's c_min. Used by the builder;
+// returns CostUnreached when the tail is empty.
+func FoldResidual(tail []CivWeight, civs *Civs, cMinKm float64) uint16 {
 	var s float64
 	for _, t := range tail {
 		s += t.Weight
@@ -72,7 +89,7 @@ func FoldResidual(tail []CivWeight, civs *Civs) uint16 {
 	if s <= 0 {
 		return CostUnreached
 	}
-	cost := -math.Log(s) * civs.MeanLambda(0) / civs.CostUnitKm
+	cost := -math.Log(s) * civs.MeanLambdaEff(0, cMinKm) / civs.CostUnitKm
 	return QuantiseCost(cost)
 }
 

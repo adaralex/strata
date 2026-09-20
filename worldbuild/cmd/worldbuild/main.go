@@ -18,6 +18,7 @@ import (
 	"github.com/adaralex/strata/server/world"
 	"github.com/adaralex/strata/worldbuild/cells"
 	"github.com/adaralex/strata/worldbuild/classify"
+	"github.com/adaralex/strata/worldbuild/drift"
 )
 
 func main() {
@@ -35,6 +36,7 @@ func run() error {
 		dataDir  = flag.String("data", "data", "data directory (cores/, beacons/, lists)")
 		bbox     = flag.String("bbox", "", "override cell coverage: minLat,minLon,maxLat,maxLon")
 		buildID  = flag.String("build-id", "", "snapshot build id (default: file name and date)")
+		driftBin = flag.String("drift", "", "drift field from 'drift solve' (track 2); optional")
 	)
 	flag.Parse()
 	if *osmPath == "" || *out == "" {
@@ -92,9 +94,18 @@ func run() error {
 	if *buildID == "" {
 		*buildID = strings.TrimSuffix(strings.TrimSuffix(filepath.Base(*osmPath), ".pbf"), ".osm") + "-" + time.Now().UTC().Format("20060102")
 	}
+	var field cells.CostField
+	if *driftBin != "" {
+		f, err := drift.Read(*driftBin)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "drift: r%d field, %d cells\n", f.Res, len(f.Keys))
+		field = f
+	}
 	snap, st, err := cells.Build(cells.Inputs{
 		BuildID: *buildID, Civs: civs, Rules: rules, Layers: layers, Curated: curated, CivTags: civTags,
-		Blocklist: block, Classified: res, Bounds: bounds, Progress: os.Stderr,
+		Blocklist: block, Classified: res, Bounds: bounds, Progress: os.Stderr, Drift: field,
 	})
 	if err != nil {
 		return err

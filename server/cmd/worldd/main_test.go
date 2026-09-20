@@ -46,7 +46,7 @@ func TestLookupAndSpawns(t *testing.T) {
 	if st := get(t, ts.URL+"/v0/lookup?lat=43.5365&lon=1.3444", &lk); st != 200 {
 		t.Fatalf("lookup status %d", st)
 	}
-	if !lk.Found || len(lk.Weights) != 3 || lk.Weights[0].Civ != "hallstatt" || lk.Purity == 0 {
+	if !lk.Found || len(lk.Weights) < 3 || lk.Weights[0].Civ != "hallstatt" || lk.Purity == 0 {
 		t.Fatalf("lookup: %+v", lk)
 	}
 	if st := get(t, ts.URL+"/v0/lookup?lat=91&lon=0", nil); st != 400 {

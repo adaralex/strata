@@ -1,0 +1,4 @@
+{ "type": "FeatureCollection", "$comment": "Nok (PLAN §2). Coarse phase 0 layer. lon,lat.", "features": [
+ { "type": "Feature", "properties": { "civ": "nok", "kind": "core", "name": "Jos plateau, Niger-Benue confluence" }, "geometry": { "type": "Polygon", "coordinates": [[[7.0,11.0],[10.0,11.0],[10.5,9.0],[8.5,7.5],[6.5,8.0],[7.0,11.0]]] } },
+ { "type": "Feature", "properties": { "civ": "nok", "kind": "periphery", "cost_km": 150, "name": "Central Nigeria" }, "geometry": { "type": "Polygon", "coordinates": [[[4.0,12.5],[12.5,12.5],[13.0,8.5],[9.0,6.0],[4.5,6.5],[4.0,12.5]]] } }
+]}

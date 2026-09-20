@@ -6,6 +6,7 @@ package world
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 )
 
@@ -26,17 +27,24 @@ type Civ struct {
 	LambdaKm float64 `json:"lambda_km"`
 	K        float64 `json:"k"`
 	Maritime bool    `json:"maritime"`
+	// OceanMul scales the ocean unit cost for this civilization in the drift
+	// solve; 1 is neutral, Lapita is below 1 (PLAN §4 "reach constant").
+	OceanMul float64 `json:"ocean_mul"`
 }
 
 // Civs is the loaded roster, indexed by id.
 type Civs struct {
 	CostUnitKm float64
-	List       [NumCivs]Civ
-	byKey      map[string]uint8
+	// Smear widens every lambda by smear * c_min so remote ground blends
+	// (decision record 0005). 0 disables it.
+	Smear float64
+	List  [NumCivs]Civ
+	byKey map[string]uint8
 }
 
 type civsFile struct {
 	CostUnitKm float64 `json:"cost_unit_km"`
+	Smear      float64 `json:"smear"`
 	Civs       []Civ   `json:"civs"`
 }
 
@@ -58,7 +66,7 @@ func ParseCivs(b []byte) (*Civs, error) {
 	if len(f.Civs) != NumCivs {
 		return nil, fmt.Errorf("civs: want exactly %d civilizations, got %d", NumCivs, len(f.Civs))
 	}
-	c := &Civs{CostUnitKm: f.CostUnitKm, byKey: map[string]uint8{}}
+	c := &Civs{CostUnitKm: f.CostUnitKm, Smear: math.Max(0, f.Smear), byKey: map[string]uint8{}}
 	if c.CostUnitKm <= 0 {
 		c.CostUnitKm = 1
 	}
@@ -72,6 +80,9 @@ func ParseCivs(b []byte) (*Civs, error) {
 		}
 		if civ.LambdaKm <= 0 {
 			return nil, fmt.Errorf("civs: %s needs lambda_km > 0", civ.Key)
+		}
+		if civ.OceanMul <= 0 {
+			civ.OceanMul = 1
 		}
 		seen[civ.ID] = true
 		c.List[civ.ID] = civ
@@ -93,11 +104,22 @@ func (c *Civs) Lambda(id uint8, propagation float64) float64 {
 	return civ.LambdaKm * (1 + civ.K*propagation)
 }
 
-// MeanLambda is the lambda used for the residual pseudo-cost.
+// LambdaEff is Lambda widened by the smear term: lambda + smear * cMinKm,
+// where cMinKm is the cheapest cost at the cell being derived.
+func (c *Civs) LambdaEff(id uint8, propagation, cMinKm float64) float64 {
+	return c.Lambda(id, propagation) + c.Smear*cMinKm
+}
+
+// MeanLambda is the base lambda used for the residual pseudo-cost.
 func (c *Civs) MeanLambda(propagation float64) float64 {
 	var s float64
 	for i := range c.List {
 		s += c.Lambda(uint8(i), propagation)
 	}
 	return s / NumCivs
+}
+
+// MeanLambdaEff is MeanLambda with the smear term.
+func (c *Civs) MeanLambdaEff(propagation, cMinKm float64) float64 {
+	return c.MeanLambda(propagation) + c.Smear*cMinKm
 }

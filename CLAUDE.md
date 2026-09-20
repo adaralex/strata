@@ -65,16 +65,17 @@ These are not preferences. Flag it loudly if a task would violate one.
 /docs            PLAN.md and decision records (docs/decisions/NNNN-*.md)
 ```
 
-Today (tracks 1 and 3): `/server/world` (the r8 cell record, weight derivation, snapshot
+Today (tracks 1, 2 and 3): `/server/world` (the r8 cell record, weight derivation, snapshot
 codec, lookup; the H3 helper in `h3x`), `/server/cond` (epoch, solar phase, propagation,
 digest), `/server/spawn` (deterministic spawns, rule predicates, collapse and the drop),
 `/server/cmd/worldd` (HTTP world service) and `/server/cmd/worldq` (query CLI),
 `/worldbuild/classify` (OSM reader and POI classifier), `/worldbuild/cells` (the cell
-builder), `/worldbuild/cmd/worldbuild` (the pipeline CLI), `/rules` (civs, POI classes,
-spawn parameters, bestiary, items), `/data` (three civilization layers, curated Toulouse
+builder), `/worldbuild/cmd/worldbuild` (the pipeline CLI), `/worldbuild/drift` and
+`/worldbuild/cmd/drift` (the planet cost field from Natural Earth terrain), `/rules`
+(civs, POI classes, spawn parameters, bestiary, items, drift costs), `/data` (fifteen civilization layers, curated Toulouse
 beacons, block and allow lists). Go module at the repo root. See `worldbuild/README.md`
-to run the Midi-Pyrénées build and `server/README.md` to serve it. Tracks 2 and 4 are
-not started. Decisions so far are in `docs/decisions`.
+to run the Midi-Pyrénées build and the drift solve, and `server/README.md` to serve it.
+Track 4 is not started. Decisions so far are in `docs/decisions`.
 
 ## Phase 0 spike — the only work in scope right now
 

@@ -31,8 +31,8 @@
     "boss": { "chance": 0.25, "exclusive_ring": 1, "tier_floor": 2, "value_mul": 2.0, "tier_shift": 1 }
   },
   "authenticity": {
-    "grounded_min_purity": 0.5,
-    "drift_max_purity": 0.35,
+    "grounded_min_purity": 0.42,
+    "drift_max_purity": 0.24,
     "confluence_spread": 0.1,
     "$comment": "Per spawn: the chance of a Drift hybrid is 0 at purity >= grounded_min, 1 at purity <= drift_max, linear between, so night (lower purity) makes hybrids likely rather than universal (PLAN §5). A hybrid pairs the spawn civilization with the strongest other one. Three weights within confluence_spread of each other is Confluence for every spawn. Accessioned and Sited are decided at collapse from the player's fix (PLAN §7)."
   },

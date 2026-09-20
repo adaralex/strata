@@ -1,0 +1,5 @@
+{ "type": "FeatureCollection", "$comment": "Meluhha (PLAN §2). Coarse phase 0 layer. lon,lat.", "features": [
+ { "type": "Feature", "properties": { "civ": "meluhha", "kind": "core", "name": "Indus basin" }, "geometry": { "type": "Polygon", "coordinates": [[[66.5,28.5],[72.5,31.0],[75.0,31.0],[73.5,28.0],[72.0,24.0],[70.0,23.0],[67.0,24.0],[66.5,26.0],[66.5,28.5]]] } },
+ { "type": "Feature", "properties": { "civ": "meluhha", "kind": "periphery", "cost_km": 150, "name": "Gujarat" }, "geometry": { "type": "Polygon", "coordinates": [[[68.5,24.5],[74.0,24.5],[74.0,20.5],[70.0,20.5],[68.5,22.5],[68.5,24.5]]] } },
+ { "type": "Feature", "properties": { "civ": "meluhha", "kind": "periphery", "cost_km": 150, "name": "Balochistan and the Oman trade coast" }, "geometry": { "type": "Polygon", "coordinates": [[[56.0,26.5],[60.0,26.0],[66.5,25.0],[66.5,24.0],[58.0,22.5],[56.0,24.0],[56.0,26.5]]] } }
+]}

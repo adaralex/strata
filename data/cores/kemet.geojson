@@ -1,0 +1,6 @@
+{ "type": "FeatureCollection", "$comment": "Kemet (PLAN §2). Coarse phase 0 layer. lon,lat.", "features": [
+ { "type": "Feature", "properties": { "civ": "kemet", "kind": "core", "name": "Nile valley and delta" }, "geometry": { "type": "Polygon", "coordinates": [[[29.5,31.6],[32.5,31.6],[33.0,30.0],[32.5,27.0],[33.5,24.0],[33.5,22.0],[31.5,22.0],[31.0,24.5],[30.5,27.0],[29.5,30.0],[29.5,31.6]]] } },
+ { "type": "Feature", "properties": { "civ": "kemet", "kind": "periphery", "cost_km": 150, "name": "Nubia" }, "geometry": { "type": "Polygon", "coordinates": [[[30.0,22.0],[34.5,22.0],[34.0,15.5],[31.5,15.5],[30.0,18.0],[30.0,22.0]]] } },
+ { "type": "Feature", "properties": { "civ": "kemet", "kind": "periphery", "cost_km": 150, "name": "Sinai" }, "geometry": { "type": "Polygon", "coordinates": [[[32.5,31.2],[34.9,31.2],[34.9,27.8],[32.5,27.8],[32.5,31.2]]] } },
+ { "type": "Feature", "properties": { "civ": "kemet", "kind": "periphery", "cost_km": 150, "name": "Western oases" }, "geometry": { "type": "Polygon", "coordinates": [[[25.0,30.5],[29.5,30.5],[29.5,24.5],[25.0,24.5],[25.0,30.5]]] } }
+]}

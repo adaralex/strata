@@ -72,3 +72,25 @@ adjacency, sorted r10 exclusion set), `beacons.json`, `pois.json`, and a copy of
 `go test ./...` runs against `worldbuild/testdata/cugnaux.osm`, a hand-written fixture
 shaped like the town centre, so no download is needed. `BenchmarkLookup` in
 `server/world` is the latency acceptance check.
+
+## Track 2: the drift field
+
+```sh
+# 1. Natural Earth 1:10m layers, public domain, from the GitHub mirror (about 34 MB).
+go run ./worldbuild/cmd/drift fetch -out out/ne
+
+# 2. Classify the planet and run the fifteen solves. r5 by default; about fifteen seconds.
+go run ./worldbuild/cmd/drift solve -ne out/ne -out out/drift/drift.bin
+
+# 3. Acceptance: no cell on the planet is unreached; look at a few points day and night.
+go run ./worldbuild/cmd/drift verify -field out/drift/drift.bin
+go run ./worldbuild/cmd/drift query 43.5365 1.3444
+go run ./worldbuild/cmd/drift query -- -31.95 115.86
+
+# 4. Fold it into a region snapshot.
+go run ./worldbuild/cmd/worldbuild -osm midi-pyrenees-latest.osm.pbf -out out/midi-pyrenees -drift out/drift/drift.bin
+```
+
+`-res 6` on `solve` runs PLAN §4's resolution: about seven times the cells and memory.
+Parameters live in `rules/drift.json`; the smear term and per-civilization `ocean_mul`
+in `rules/civs.json`. Decision record 0005 explains the choices.

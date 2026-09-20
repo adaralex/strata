@@ -1,0 +1,4 @@
+{ "type": "FeatureCollection", "$comment": "Olmec (PLAN §2). Coarse phase 0 layer. lon,lat.", "features": [
+ { "type": "Feature", "properties": { "civ": "olmec", "kind": "core", "name": "Veracruz and Tabasco Gulf coast" }, "geometry": { "type": "Polygon", "coordinates": [[[-97.5,19.0],[-94.0,18.8],[-92.0,18.5],[-91.5,17.5],[-93.5,17.0],[-96.5,17.5],[-97.5,19.0]]] } },
+ { "type": "Feature", "properties": { "civ": "olmec", "kind": "periphery", "cost_km": 150, "name": "Gulf coast and Chiapas highlands" }, "geometry": { "type": "Polygon", "coordinates": [[[-99.0,20.5],[-90.5,20.5],[-90.0,15.5],[-94.0,15.0],[-99.0,17.0],[-99.0,20.5]]] } }
+]}

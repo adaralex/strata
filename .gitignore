@@ -1,5 +1,7 @@
 # OSM extracts and built snapshots are large and regenerable.
 *.osm.pbf
+/out/ne/
+/out/drift/
 /out/
 # Go build artefacts.
 /bin/

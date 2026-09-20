@@ -309,3 +309,9 @@ func ParseCell(s string) (Cell, bool) {
 	c := h3.CellFromString(s)
 	return c, c.IsValid()
 }
+
+// Res0Cells returns the 122 base cells, the root of any planet enumeration.
+func Res0Cells() ([]Cell, error) { return h3.Res0Cells() }
+
+// EdgeLengthKm is the average hexagon edge length at a resolution.
+func EdgeLengthKm(res int) (float64, error) { return h3.HexagonEdgeLengthAvgKm(res) }
