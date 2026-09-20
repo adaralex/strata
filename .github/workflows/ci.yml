@@ -14,6 +14,8 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - name: system deps
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq pkg-config zlib1g-dev
       - name: gofmt
         run: test -z "$(gofmt -l .)" || (gofmt -d . && exit 1)
       - name: build

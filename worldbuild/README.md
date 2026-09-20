@@ -2,6 +2,20 @@
 
 Phase 0 track 1: one OSM extract in, one H3 r8 snapshot out (PLAN.md §14 steps 1 to 4).
 
+## Prerequisites
+
+Go 1.24 or later and a C toolchain: the H3 binding is CGO, and with CGO on the PBF
+reader uses the C zlib through `pkg-config`.
+
+```sh
+# Debian / Ubuntu
+sudo apt-get install -y pkg-config zlib1g-dev build-essential
+# macOS (Homebrew); if pkg-config still misses zlib, export PKG_CONFIG_PATH="$(brew --prefix zlib)/lib/pkgconfig"
+brew install pkg-config zlib
+# Fedora
+sudo dnf install -y pkgconf-pkg-config zlib-devel gcc
+```
+
 ## Run the Midi-Pyrénées build
 
 ```sh
