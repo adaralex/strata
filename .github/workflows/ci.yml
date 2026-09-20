@@ -14,8 +14,6 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: system deps
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq pkg-config zlib1g-dev
       - name: gofmt
         run: test -z "$(gofmt -l .)" || (gofmt -d . && exit 1)
       - name: build
@@ -28,6 +26,8 @@ jobs:
           version: v2.1
       - name: test
         run: go test -race ./...
+      - name: test czlib stand-in
+        run: cd third_party/czlib && go test ./...
       - name: lookup benchmark
         run: go test -run xxx -bench Lookup -benchtime 20000x ./server/world/
       - name: fixture build
