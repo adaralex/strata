@@ -35,6 +35,7 @@ type Spawn struct {
 	Name         string   `json:"name"`
 	Tags         []string `json:"tags,omitempty"`
 	Fiction      string   `json:"fiction"`
+	Rank         string   `json:"rank"`
 	Tier         int      `json:"tier"`
 	TierName     string   `json:"tier_name"`
 	Authenticity string   `json:"authenticity"`
@@ -157,7 +158,25 @@ func (s *Spawner) spawnsAt(cell h3x.Cell, v cond.Vector) ([]Spawn, error) {
 
 	seed := keyedHash(s.Secret, uint64(cell), uint64(v.Epoch), v.Digest())
 	expires := cond.EpochStart(v.Epoch + 1 + r.Placement.ClaimGraceEpochs).Unix()
+
+	// Ranks: slot 0 is the area boss when this cell wins the neighbourhood
+	// roll, the next slot an elite with its own chance, the rest commons.
+	ranks := make([]string, count)
+	for i := range ranks {
+		ranks[i] = RankCommon
+	}
+	next := 0
+	if next < count && s.bossHere(cell, v) {
+		ranks[next] = RankBoss
+		next++
+	}
+	if next < count && r.Ranks.Elite.MaxPerCell > 0 && newRNG(mix(seed, 0xE117)).float() < r.Ranks.Elite.Chance {
+		ranks[next] = RankElite
+	}
+	bossDist := shiftTiers(tierDist, r.Ranks.Boss.TierShift)
+
 	var out []Spawn
+	elites := 0
 	for slot := 0; slot < count; slot++ {
 		rg := newRNG(mix(seed, uint64(slot)))
 		ci := rg.pick(civWeights)
@@ -165,7 +184,15 @@ func (s *Spawner) spawnsAt(cell h3x.Cell, v cond.Vector) ([]Spawn, error) {
 			continue
 		}
 		civID := weights.Top[ci].Civ
-		m := s.pickMonster(civID, facts, rg)
+		m, rank := s.pickMonster(civID, ranks[slot], facts, rg)
+		if rank == RankElite {
+			// A boss slot that fell back to an elite still respects the cap.
+			if elites >= r.Ranks.Elite.MaxPerCell {
+				m, rank = s.pickMonster(civID, RankCommon, facts, rg)
+			} else {
+				elites++
+			}
+		}
 		if m == nil {
 			continue
 		}
@@ -175,7 +202,14 @@ func (s *Spawner) spawnsAt(cell h3x.Cell, v cond.Vector) ([]Spawn, error) {
 		} else if rg.float() < driftP {
 			auth = Drift
 		}
-		tier := rg.pick(tierDist)
+		dist, floor, rankMul := tierDist, 0, 1.0
+		switch rank {
+		case RankBoss:
+			dist, floor, rankMul = bossDist, r.Ranks.Boss.TierFloor, r.Ranks.Boss.ValueMul
+		case RankElite:
+			floor, rankMul = r.Ranks.Elite.TierFloor, r.Ranks.Elite.ValueMul
+		}
+		tier := max(rg.pick(dist), min(floor, len(r.Tiers.Names)-1))
 		place := free[rg.intn(len(free))]
 		plat, plon, err := h3x.Center(place)
 		if err != nil {
@@ -185,7 +219,7 @@ func (s *Spawner) spawnsAt(cell h3x.Cell, v cond.Vector) ([]Spawn, error) {
 		sp := Spawn{
 			Cell: cell.String(), Epoch: v.Epoch, ExpiresAt: expires, Slot: slot,
 			Civ: s.World.CivName(civID), Kind: m.ID, Name: m.Name, Tags: m.Tags, Fiction: m.Fiction,
-			Tier: tier, TierName: r.Tiers.Names[tier], Authenticity: auth, ValueMul: math.Round(valueMul*100) / 100,
+			Rank: rank, Tier: tier, TierName: r.Tiers.Names[tier], Authenticity: auth, ValueMul: math.Round(valueMul*rankMul*100) / 100,
 			Lat: plat, Lon: plon, PlaceCell: place.String(),
 			id: mix(seed, 0x5150+uint64(slot)),
 		}
@@ -202,9 +236,59 @@ func (s *Spawner) spawnsAt(cell h3x.Cell, v cond.Vector) ([]Spawn, error) {
 	return out, nil
 }
 
-// pickMonster chooses among the civilization's eligible monsters.
-func (s *Spawner) pickMonster(civ uint8, facts *cellFacts, rg *rng) *Monster {
-	cands := s.Content.Bestiary.byCiv[civ]
+// pickMonster chooses among the civilization's eligible monsters of a rank,
+// falling back to the next rank down when none is eligible (a civilization
+// with no boss for these conditions still fills the slot).
+func (s *Spawner) pickMonster(civ uint8, rank string, facts *cellFacts, rg *rng) (*Monster, string) {
+	for _, rk := range ranksFrom(rank) {
+		if m := s.pickMonsterOfRank(civ, rk, facts, rg); m != nil {
+			return m, rk
+		}
+	}
+	return nil, ""
+}
+
+func ranksFrom(rank string) []string {
+	switch rank {
+	case RankBoss:
+		return []string{RankBoss, RankElite, RankCommon}
+	case RankElite:
+		return []string{RankElite, RankCommon}
+	default:
+		return []string{RankCommon}
+	}
+}
+
+// bossHere is the area-boss rule: the cell's boss roll must beat every
+// neighbour within the exclusive ring and fall under the chance, so two
+// adjacent cells never both hold a boss in one epoch. Neighbour rolls need
+// only the neighbour's index, not its record.
+func (s *Spawner) bossHere(cell h3x.Cell, v cond.Vector) bool {
+	b := s.Content.Rules.Ranks.Boss
+	if b.Chance <= 0 {
+		return false
+	}
+	roll := func(c h3x.Cell) float64 {
+		return float64(keyedHash(s.Secret, uint64(c), uint64(v.Epoch), v.Digest(), 0xB055)>>11) / (1 << 53)
+	}
+	mine := roll(cell)
+	if mine >= b.Chance {
+		return false
+	}
+	disk, err := h3x.Disk(cell, max(1, b.ExclusiveRing))
+	if err != nil {
+		return false
+	}
+	for _, n := range disk {
+		if n != cell && roll(n) <= mine {
+			return false
+		}
+	}
+	return true
+}
+
+func (s *Spawner) pickMonsterOfRank(civ uint8, rank string, facts *cellFacts, rg *rng) *Monster {
+	cands := s.Content.Bestiary.byCiv[civ][rank]
 	var eligible []*Monster
 	var weights []float64
 	hearth := facts.cr.Record.ServiceMask&s.World.Snap.ClassBit("hearth") != 0

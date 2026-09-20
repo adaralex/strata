@@ -44,5 +44,6 @@ go run ./server/cmd/worldq -snapshot out/midi-pyrenees bench
 - `world`: r8 cell record, weights, snapshot codec, lookup. `world/h3x` is the only place
   with spatial maths.
 - `cond`: epoch, solar phase, moon, propagation, digest (PLAN §5, phase 0 subset).
-- `spawn`: deterministic spawns, rule predicates, placement, collapse and the drop
+- `spawn`: deterministic spawns with common, elite and boss ranks, rule predicates,
+  placement, collapse and the drop
   (decision record 0004). Content in `rules/spawn.json`, `bestiary.json`, `items.json`.

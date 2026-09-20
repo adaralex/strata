@@ -399,3 +399,69 @@ func TestNightMakesHybridsLikelyNotUniversal(t *testing.T) {
 		t.Fatalf("night drift fraction %.2f should rise above day %.2f without becoming universal", nightFrac, dayFrac)
 	}
 }
+
+func TestRanks(t *testing.T) {
+	s := newSpawner(t)
+	r := s.Content.Rules
+	centre, _ := h3x.FromLatLng(townHall[0], townHall[1], h3x.ResWeight)
+	disk, _ := h3x.Disk(centre, 1)
+	counts := map[string]int{}
+	bossCells := 0
+	for e := int64(0); e < 60; e++ {
+		at := noon.Add(time.Duration(e) * 15 * time.Minute)
+		bossesInDisk := map[h3x.Cell]bool{}
+		for _, c := range disk {
+			sps, _, err := s.Spawns(c, at)
+			if err != nil {
+				t.Fatal(err)
+			}
+			elites, bosses := 0, 0
+			for _, sp := range sps {
+				counts[sp.Rank]++
+				m := s.Content.Bestiary.ByID(sp.Kind)
+				if m.Rank != sp.Rank {
+					t.Fatalf("spawn rank %s but monster %s is %s", sp.Rank, sp.Kind, m.Rank)
+				}
+				switch sp.Rank {
+				case RankBoss:
+					bosses++
+					if sp.Tier < r.Ranks.Boss.TierFloor {
+						t.Fatalf("boss below tier floor: %+v", sp)
+					}
+				case RankElite:
+					elites++
+					if sp.Tier < r.Ranks.Elite.TierFloor {
+						t.Fatalf("elite below tier floor: %+v", sp)
+					}
+				}
+			}
+			if elites > r.Ranks.Elite.MaxPerCell || bosses > 1 {
+				t.Fatalf("cell %s epoch %d: %d elites, %d bosses", c, e, elites, bosses)
+			}
+			if bosses == 1 {
+				bossesInDisk[c] = true
+				if c == centre {
+					bossCells++
+				}
+			}
+		}
+		// No two adjacent cells hold a boss in the same epoch.
+		for c := range bossesInDisk {
+			ring, _ := c.GridDisk(1)
+			for _, n := range ring {
+				if n != c && bossesInDisk[n] {
+					t.Fatalf("epoch %d: adjacent cells %s and %s both hold a boss", e, c, n)
+				}
+			}
+		}
+	}
+	if counts[RankCommon] <= counts[RankElite]+counts[RankBoss] {
+		t.Fatalf("commons must be the bulk: %v", counts)
+	}
+	if counts[RankBoss] == 0 || counts[RankElite] == 0 {
+		t.Fatalf("expected some elites and bosses over 60 epochs: %v", counts)
+	}
+	if bossCells > 30 {
+		t.Fatalf("centre cell held a boss in %d of 60 epochs; bosses should be rare", bossCells)
+	}
+}

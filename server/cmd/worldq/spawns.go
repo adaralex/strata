@@ -45,7 +45,7 @@ func spawns(w *world.World, lat, lon float64, at, rulesDir string) error {
 		if s.Secondary != "" {
 			hy = " (hybrid with " + s.Secondary + ")"
 		}
-		fmt.Printf("%6.0f m  %-10s %-13s %-34s %-10s x%.2f  %s%s\n", sp.DistanceM(lat, lon, s), s.Civ, s.TierName, s.Name, s.Authenticity, s.ValueMul, s.ID, hy)
+		fmt.Printf("%6.0f m  %-6s %-10s %-13s %-34s %-10s x%.2f  %s%s\n", sp.DistanceM(lat, lon, s), s.Rank, s.Civ, s.TierName, s.Name, s.Authenticity, s.ValueMul, s.ID, hy)
 	}
 	return nil
 }

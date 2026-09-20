@@ -25,6 +25,11 @@
     "value_shift_per_mul": 0.5,
     "$comment": "A shift of +1 moves 60% of each tier's mass one tier up; fractional shifts interpolate. value_shift = (value_mul - 1) * value_shift_per_mul."
   },
+  "ranks": {
+    "$comment": "Monster ranks (decision record 0004 amendment). Commons fill the count. At most one elite per cell per epoch, with the given chance. A boss appears only when the cell wins the boss roll against its six neighbours and the roll is under the chance, so no two adjacent cells hold a boss in one epoch. Floors are minimum tiers; value_mul multiplies the cell value.",
+    "elite": { "chance": 0.6, "max_per_cell": 1, "tier_floor": 1, "value_mul": 1.5 },
+    "boss": { "chance": 0.25, "exclusive_ring": 1, "tier_floor": 2, "value_mul": 2.0, "tier_shift": 1 }
+  },
   "authenticity": {
     "grounded_min_purity": 0.5,
     "drift_max_purity": 0.35,

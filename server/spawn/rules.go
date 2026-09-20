@@ -38,6 +38,21 @@ type Rules struct {
 		WildShift         int       `json:"wild_shift"`
 		ValueShiftPerMul  float64   `json:"value_shift_per_mul"`
 	} `json:"tiers"`
+	Ranks struct {
+		Elite struct {
+			Chance     float64 `json:"chance"`
+			MaxPerCell int     `json:"max_per_cell"`
+			TierFloor  int     `json:"tier_floor"`
+			ValueMul   float64 `json:"value_mul"`
+		} `json:"elite"`
+		Boss struct {
+			Chance        float64 `json:"chance"`
+			ExclusiveRing int     `json:"exclusive_ring"`
+			TierFloor     int     `json:"tier_floor"`
+			ValueMul      float64 `json:"value_mul"`
+			TierShift     float64 `json:"tier_shift"`
+		} `json:"boss"`
+	} `json:"ranks"`
 	Authenticity struct {
 		GroundedMinPurity float64 `json:"grounded_min_purity"`
 		DriftMaxPurity    float64 `json:"drift_max_purity"`
@@ -67,6 +82,7 @@ type Rules struct {
 type Monster struct {
 	ID         string          `json:"id"`
 	Civ        string          `json:"civ"`
+	Rank       string          `json:"rank"` // common | elite | boss; empty = common
 	Name       string          `json:"name"`
 	Weight     float64         `json:"weight"`
 	Tags       []string        `json:"tags"`
@@ -100,9 +116,16 @@ func (m *Monster) HasTag(tag string) bool {
 // Bestiary is rules/bestiary.json, indexed by civilization id.
 type Bestiary struct {
 	Monsters []Monster
-	byCiv    [world.NumCivs][]*Monster
+	byCiv    [world.NumCivs]map[string][]*Monster // rank -> monsters
 	byID     map[string]*Monster
 }
+
+// Ranks, from the bulk to the rarest.
+const (
+	RankCommon = "common"
+	RankElite  = "elite"
+	RankBoss   = "boss"
+)
 
 // ByID finds a monster.
 func (b *Bestiary) ByID(id string) *Monster { return b.byID[id] }
@@ -189,6 +212,12 @@ func LoadContent(rulesDir string, civs *world.Civs) (*Content, error) {
 		if m.Weight <= 0 {
 			return nil, fmt.Errorf("bestiary: %s: weight must be > 0", m.ID)
 		}
+		if m.Rank == "" {
+			m.Rank = RankCommon
+		}
+		if m.Rank != RankCommon && m.Rank != RankElite && m.Rank != RankBoss {
+			return nil, fmt.Errorf("bestiary: %s: rank must be common, elite or boss, got %q", m.ID, m.Rank)
+		}
 		if m.LootBias != nil && items.byID[m.LootBias.Archetype] == nil {
 			return nil, fmt.Errorf("bestiary: %s: loot_bias archetype %q not in items.json", m.ID, m.LootBias.Archetype)
 		}
@@ -209,11 +238,14 @@ func LoadContent(rulesDir string, civs *world.Civs) (*Content, error) {
 			return nil, fmt.Errorf("bestiary: duplicate id %q", m.ID)
 		}
 		b.byID[m.ID] = m
-		b.byCiv[id] = append(b.byCiv[id], m)
+		if b.byCiv[id] == nil {
+			b.byCiv[id] = map[string][]*Monster{}
+		}
+		b.byCiv[id][m.Rank] = append(b.byCiv[id][m.Rank], m)
 	}
 	for id := range b.byCiv {
-		if len(b.byCiv[id]) == 0 {
-			return nil, fmt.Errorf("bestiary: civilization %s has no monsters", civs.List[id].Key)
+		if len(b.byCiv[id][RankCommon]) == 0 {
+			return nil, fmt.Errorf("bestiary: civilization %s has no common monsters", civs.List[id].Key)
 		}
 	}
 	c.Bestiary = b

@@ -55,6 +55,18 @@ gate, in memory for phase 0 (`spawn.MemoryState`).
   the hadas, Jean de l'Ours, the drac of the Garonne, the Cocagne pastel trade, the
   norias of Cugnaux. Each entry's `note` names its source; that text is not the fiction.
 
+## Amendment: ranks (2026-09-20)
+
+Named folklore creatures were appearing every fifty metres. The bestiary now carries a
+`rank`: **common** is the bulk (bog-wights, sherd wraiths, mirror-faces, swarms), **elite**
+is a mini-boss capped at one per cell per epoch with a 60% chance and a tier floor of
+Burnished, **boss** is an area boss with a tier floor of Votive. A cell holds a boss only
+when its boss roll is under 25% and beats every neighbour's roll in the ring, so two
+adjacent cells never both hold one in the same epoch, and no cross-cell state is needed.
+A boss or elite slot whose civilization has nothing eligible falls back a rank; the elite
+cap still applies. Parameters in `rules/spawn.json` under `ranks`. The Drac of the
+Garonne, the Hoard-Warden, Bécut, Jean de l'Ours, Charun and Tuchulcha are bosses.
+
 ## The service
 
 `server/cmd/worldd` serves lookups, spawns and collapses over HTTP for the walk test, with
