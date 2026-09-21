@@ -114,7 +114,12 @@ screen (cosmetic); GO Map logs "create a Unity Layer named GOTerrain" per tile (
 elevation is off); the Unity editor freezes Play mode while unfocused, so drive the editor
 with the Unity window in front.
 
-**Next:** step 4, the shakedown walk on the phone with the 20:29 APK, then step 5.
+**Next (2026-09-21):** step 4, the shakedown walk on the phone with the APK built after
+`08f53f7` (collapse fix, views, service buildings, RPG chrome), then step 5. Server
+follow-ups when someone with a Go toolchain is at hand: worldd omitting spawns a device has
+already collapsed; a `/v0/services` endpoint from `poi_classes.json` so the map's buildings
+use the game's own classification; restoring `count.base` 3 / `count.max` 12 before the
+walk with someone off the team.
 
 **Service buildings (2026-09-20, late):** `ServiceMarkers` draws an ink building with a
 sign (glyph, function word, shop name) for hearth, vault, wardrobe, forge, apothecary,
