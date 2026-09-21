@@ -34,7 +34,19 @@ namespace Strata.Play
             public Dictionary<string, int> winsByCiv = new Dictionary<string, int>();
         }
 
+        public sealed class FightPoint
+        {
+            public double lat, lon;
+            public string civ, name, rank;
+            public bool won;
+            public string at;
+        }
+
         public string createdAt;
+        public int walks;
+        public double totalMetres;
+        public Dictionary<string, double> metresByCiv = new Dictionary<string, double>();
+        public List<FightPoint> fightPoints = new List<FightPoint>();
         public List<Item> items = new List<Item>();
         public Dictionary<string, string> equipped = new Dictionary<string, string>(); // slot -> item id
         public Dictionary<string, CodexEntry> codex = new Dictionary<string, CodexEntry>(); // spawn kind -> entry
@@ -65,8 +77,108 @@ namespace Strata.Play
             codex = codex ?? new Dictionary<string, CodexEntry>();
             battle = battle ?? new Battle();
             battle.winsByCiv = battle.winsByCiv ?? new Dictionary<string, int>();
+            metresByCiv = metresByCiv ?? new Dictionary<string, double>();
+            fightPoints = fightPoints ?? new List<FightPoint>();
             return this;
         }
+
+        // ---- distance and walks ----
+
+        private double _unsavedMetres;
+
+        /// <summary>Accrue distance under a civilization; saved by SaveIfDue or the next Save.</summary>
+        public void AddMetres(string civ, double metres)
+        {
+            if (metres <= 0) return;
+            civ = string.IsNullOrEmpty(civ) ? "unknown" : civ;
+            metresByCiv.TryGetValue(civ, out var m);
+            metresByCiv[civ] = m + metres;
+            totalMetres += metres;
+            _unsavedMetres += metres;
+        }
+
+        /// <summary>Write the file when at least this much distance is unsaved.</summary>
+        public void SaveIfDue(double thresholdMetres = 100)
+        {
+            if (_unsavedMetres >= thresholdMetres) { _unsavedMetres = 0; Save(); }
+        }
+
+        public void EndWalk()
+        {
+            walks++;
+            _unsavedMetres = 0;
+            Save();
+        }
+
+        /// <summary>The civilization this walker leans to: most wins, then most ground walked.</summary>
+        public string PreferredCiv()
+        {
+            string best = null; int bestWins = -1; double bestM = -1;
+            foreach (var kv in battle.winsByCiv)
+            {
+                metresByCiv.TryGetValue(kv.Key, out var m);
+                if (kv.Value > bestWins || (kv.Value == bestWins && m > bestM)) { best = kv.Key; bestWins = kv.Value; bestM = m; }
+            }
+            if (best != null) return best;
+            foreach (var kv in metresByCiv) if (kv.Key != "unknown" && kv.Value > bestM) { best = kv.Key; bestM = kv.Value; }
+            return best;
+        }
+
+        /// <summary>Civilizations the worn gear represents, most pieces first.</summary>
+        public List<KeyValuePair<string, int>> GearCivs()
+        {
+            var counts = new Dictionary<string, int>();
+            foreach (var slot in Slots)
+            {
+                var it = EquippedIn(slot);
+                if (it?.Civ == null) continue;
+                counts.TryGetValue(it.Civ, out var c);
+                counts[it.Civ] = c + 1;
+            }
+            var list = new List<KeyValuePair<string, int>>(counts);
+            list.Sort((a, b) => b.Value.CompareTo(a.Value));
+            return list;
+        }
+
+        // ---- achievements: derived, never stored ----
+
+        public sealed class Achievement
+        {
+            public string Id, Title, Detail;
+            public bool Earned;
+        }
+
+        public List<Achievement> Achievements()
+        {
+            int wornSlots = 0; foreach (var s in Slots) if (EquippedIn(s) != null) wornSlots++;
+            var civsHeld = new HashSet<string>(); foreach (var i in items) if (i.Civ != null) civsHeld.Add(i.Civ);
+            bool hybrid = items.Exists(i => i.IsHybrid), grounded = items.Exists(i => i.Authenticity == "grounded");
+            bool elite = false, boss = false; foreach (var e in codex.Values) { if (e.won > 0 && e.rank == "elite") elite = true; if (e.won > 0 && e.rank == "boss") boss = true; }
+            int tiers = 0; foreach (var i in items) if (i.Tier >= 2) tiers++;
+            return new List<Achievement>
+            {
+                A("first_blood", "First Blood", "Win a fight", battle.wins >= 1),
+                A("ten_fights", "Blooded", "Win ten fights", battle.wins >= 10),
+                A("fifty_fights", "Veteran", "Win fifty fights", battle.wins >= 50),
+                A("first_drop", "Something Followed", "Receive a drop", battle.drops >= 1),
+                A("grounded", "Of This Soil", "A grounded item", grounded),
+                A("hybrid", "Made By The Transmission", "A drift hybrid", hybrid),
+                A("votive", "Votive", "An item of votive tier or above", tiers >= 1),
+                A("elite", "Elite Slayer", "Beat an elite", elite),
+                A("boss", "Area Boss", "Beat an area boss", boss),
+                A("km1", "First Kilometre", "Walk 1 km", totalMetres >= 1000),
+                A("km5", "Five Kilometres", "Walk 5 km", totalMetres >= 5000),
+                A("km10", "Ten Kilometres", "Walk 10 km", totalMetres >= 10000),
+                A("km25", "Twenty-Five", "Walk 25 km", totalMetres >= 25000),
+                A("four_civs", "Four Peoples", "Items from four civilizations", civsHeld.Count >= 4),
+                A("full_kit", "Fully Dressed", "Every slot worn", wornSlots >= Slots.Length),
+                A("codex10", "Ten Names", "Ten monsters in the codex", codex.Count >= 10),
+                A("codex25", "Bestiary", "Twenty-five monsters in the codex", codex.Count >= 25),
+                A("walks3", "Habit", "Three walks ended", walks >= 3),
+            };
+        }
+
+        private static Achievement A(string id, string title, string detail, bool earned) => new Achievement { Id = id, Title = title, Detail = detail, Earned = earned };
 
         public void Save()
         {
@@ -164,9 +276,11 @@ namespace Strata.Play
 
         // ---- codex and battle record ----
 
-        public void RecordFight(Spawn sp, bool won, bool auto)
+        public void RecordFight(Spawn sp, bool won, bool auto, double? lat = null, double? lon = null)
         {
             battle.fights++;
+            if (lat.HasValue && lon.HasValue)
+                fightPoints.Add(new FightPoint { lat = lat.Value, lon = lon.Value, civ = sp?.Civ, name = sp?.Name, rank = sp?.Rank, won = won, at = DateTimeOffset.UtcNow.ToString("o") });
             if (won) battle.wins++; else battle.losses++;
             if (auto) battle.autoResolves++;
             if (sp != null)

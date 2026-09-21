@@ -31,6 +31,7 @@ namespace Strata.Play
         private GroundStrip _strip;
         private SpawnMarkers _markers;
         private ServiceMarkers _services;
+        private StrataAvatar _avatar;
         private Fight _fight;
         private ItemCard _card;
         private Debrief _debrief;
@@ -38,6 +39,7 @@ namespace Strata.Play
         private EquipmentView _equipment;
         private InventoryView _inventory;
         private CodexView _codex;
+        private ProfileView _profile;
         private FixSource _fixes;
         private readonly WalkLog _log = new WalkLog();
 
@@ -47,6 +49,7 @@ namespace Strata.Play
         // turns, so without this the marker comes back on the next refresh and a second tap is
         // refused as "already collapsed by this device".
         private readonly HashSet<string> _collapsed = new HashSet<string>();
+        private float _ambushUntil;
         private Fix? _fix;
         private double _lastSpawnLat, _lastSpawnLon;
         private float _lastLookupAt = -999, _lastSpawnsAt = -999;
@@ -65,15 +68,24 @@ namespace Strata.Play
             _ui = new UIKit();
             _strip = new GroundStrip(_ui);
             _markers = new SpawnMarkers(map, worldCamera);
+            _markers.OnReveal += (sp, d) =>
+            {
+                if (_modal || _fight.Active) return;
+                _ambushUntil = Time.time + 4f; // hold the line against the next fix's nearest hint
+                SetStatus($"AMBUSH  {sp.Name}, {d:0} m{(d <= settings.interactionRangeM ? "  TAP IT" : "")}");
+            };
             _services = new ServiceMarkers();
             map.ConfigureServices(ServiceMarkers.Kinds, _services.Template, _services.OnPoi);
+            _avatar = StrataAvatar.Attach();
             _fight = new Fight(_ui);
             _card = new ItemCard(_ui);
             _debrief = new Debrief(_ui);
             _store = PlayerStore.Load();
+            _store.Changed += DressAvatar;
             _equipment = new EquipmentView(_ui, _store);
             _inventory = new InventoryView(_ui, _store);
             _codex = new CodexView(_ui, _store);
+            _profile = new ProfileView(_ui, _store, () => _avatar, () => _fix);
             BuildBottomBar();
             UI.TapCatcher.Create(_ui.Root).OnTap += OnTap;
 
@@ -127,6 +139,7 @@ namespace Strata.Play
             Spawn best = null; double bestD = double.MaxValue;
             foreach (var sp in _spawns.Spawns)
             {
+                if (!_markers.IsVisible(sp.Id)) continue;
                 var d = Geo.DistanceM(f.Lat, f.Lon, sp.Lat, sp.Lon);
                 if (d < bestD) { bestD = d; best = sp; }
             }
@@ -158,20 +171,28 @@ namespace Strata.Play
             var f = _fix.Value;
             Spawn best = null;
             double bestD = double.MaxValue;
+            int hidden = 0;
             foreach (var sp in _spawns.Spawns)
             {
+                if (!_markers.IsVisible(sp.Id)) { hidden++; continue; } // the unseen stay unannounced
                 var d = Geo.DistanceM(f.Lat, f.Lon, sp.Lat, sp.Lon);
                 if (d < bestD) { bestD = d; best = sp; }
             }
-            return best == null ? null : $"nearest: {best.Name}, {bestD:0} m{(bestD <= settings.interactionRangeM ? "  TAP IT" : "")}";
+            if (best == null) return hidden > 0 ? "the ground is not empty; keep walking" : null;
+            var rank = best.Rank == "common" || string.IsNullOrEmpty(best.Rank) ? "" : best.Rank.ToUpper() + " ";
+            return $"nearest: {rank}{best.Name}, {bestD:0} m{(bestD <= settings.interactionRangeM ? "  TAP IT" : "")}";
         }
 
         private void OnFix(Fix f)
         {
             bool first = !_fix.HasValue;
+            var before = _log.totalMetres;
             _fix = f;
+            _markers.SetPlayer(f.Lat, f.Lon);
             _log.Fix(f.Lat, f.Lon);
-            if (!_modal && !_fight.Active) { var hint = NearestHint(); if (hint != null) SetStatus(hint); }
+            _store.AddMetres(_lookup?.DominantCiv, _log.totalMetres - before);
+            _store.SaveIfDue();
+            if (!_modal && !_fight.Active && Time.time >= _ambushUntil) { var hint = NearestHint(); if (hint != null) SetStatus(hint); }
             if (first || _lookup == null)
             {
                 StartCoroutine(RefreshLookup());
@@ -196,6 +217,7 @@ namespace Strata.Play
                 _lookup = r.Value;
                 _log.SetGround(_lookup);
                 _strip.Show(_lookup, _ui);
+                DressAvatar();
                 UpdateBanner();
             });
         }
@@ -242,7 +264,7 @@ namespace Strata.Play
             _fight.Begin(sp, (won, auto) =>
             {
                 _log.Fought(won, auto);
-                _store.RecordFight(sp, won, auto);
+                _store.RecordFight(sp, won, auto, _fix?.Lat, _fix?.Lon);
                 if (!won) { _modal = false; SetStatus($"{sp.Name} slipped away"); return; }
                 StartCoroutine(Collapse(sp));
             });
@@ -270,6 +292,15 @@ namespace Strata.Play
             });
         }
 
+        /// <summary>The cloak shows the worn main-hand's civilization, else the ground's.</summary>
+        private void DressAvatar()
+        {
+            if (_avatar == null) return;
+            var worn = _store?.EquippedIn("main") ?? _store?.EquippedIn("body");
+            var civ = worn?.Civ ?? _lookup?.DominantCiv;
+            if (civ != null) _avatar.SetCloak(CivPalette.Of(civ));
+        }
+
         /// <summary>Drop a spawn from the map and the cached list for the rest of the session.</summary>
         private void Forget(Spawn sp)
         {
@@ -285,6 +316,7 @@ namespace Strata.Play
             col.childAlignment = TextAnchor.LowerLeft;
             _statusText = _ui.Text(bar, "", 32, false, TextAlignmentOptions.BottomLeft, new Color(0.75f, 0.75f, 0.75f));
             var views = _ui.Row(bar, 90, 16);
+            _ui.Button_(views, "Hero", UIKit.PanelLight, () => OpenView(_profile.Show), 90, TextAlignmentOptions.Center, UIKit.Ink);
             _ui.Button_(views, "Gear", UIKit.PanelLight, () => OpenView(_equipment.Show), 90, TextAlignmentOptions.Center, UIKit.Ink);
             _ui.Button_(views, "Bag", UIKit.PanelLight, () => OpenView(_inventory.Show), 90, TextAlignmentOptions.Center, UIKit.Ink);
             _ui.Button_(views, "Codex", UIKit.PanelLight, () => OpenView(_codex.Show), 90, TextAlignmentOptions.Center, UIKit.Ink);
@@ -295,7 +327,7 @@ namespace Strata.Play
             h.childForceExpandWidth = true;
             row.GetComponent<UnityEngine.UI.LayoutElement>().minHeight = 90;
             var rrt = row.GetComponent<RectTransform>();
-            _ui.Button_(rrt, "End walk", UIKit.Accent, () => { if (_modal) return; _modal = true; _debrief.Show(_log, () => _modal = false); }, 90);
+            _ui.Button_(rrt, "End walk", UIKit.Accent, () => { if (_modal) return; _modal = true; _store.EndWalk(); _debrief.Show(_log, () => _modal = false); }, 90);
             _ui.Button_(rrt, "Server", UIKit.PanelLight, ShowSettings, 90);
         }
 

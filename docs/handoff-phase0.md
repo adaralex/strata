@@ -141,3 +141,28 @@ spawn this device has collapsed until the epoch turns, so the marker came back o
 refresh and a second tap was refused 409 "already collapsed by this device" (27 times);
 the client now forgets collapsed spawns for the session. Start it from Server > Emulate
 the walk in the editor.
+
+## Beyond phase 0 · 2026-09-21
+
+The owner skipped the outsider walk: the prototype felt rough, the graphics not catchy, the
+monster density too low. Phase 1 items pulled forward, still procedural, no imported art:
+
+- **Hidden commons.** `count.base` 16 / `max` 40 on the server (test setting). The client
+  hides commons beyond 90 m, pulses a faint ink "stir" on the ground between 90 and 45 m,
+  and springs the figure up at 45 m with an `AMBUSH` status line held for four seconds.
+  Elites (gold cap) and bosses (gold cap plus a tall translucent beacon) show from anywhere.
+  Hidden spawns are never hinted, tapped or auto-engaged.
+- **The walker.** `StrataAvatar`: a human figure from primitives under GO Map's Avatar rig,
+  replacing the demo character; legs and arms swing from real displacement, faces the way it
+  walks, breathes at rest. Cloak and sash in the civilization of the worn main hand (or body),
+  else the ground's dominant one.
+- **Hero page.** Live portrait (a camera rendering the figure to a texture), identity and
+  the civilization the walker leans to (most wins, then most ground), walks and kilometres,
+  the four stats, what the worn gear speaks for, ground walked by civilization, eighteen
+  derived achievements, and a globe with a graticule, a dot per fight coloured by
+  civilization and the walker in gold, turned to face the point of interest and drifting.
+- **Store.** Cumulative metres by civilization, walks, and fight points with coordinates
+  (fights before this build have no point).
+
+Judgement calls left open: whether elites should also hide until closer; hybrid share at
+night; whether the globe should zoom to the neighbourhood when every fight is in one town.
